@@ -26,6 +26,8 @@ project(Connection)
 
 add_library(${PROJECT_NAME}
     ServerConnection.cpp
+    HandlerThread.cpp
+    IListener.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -33,6 +35,6 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC Boost::beast
+    PRIVATE Boost::beast
 )
 

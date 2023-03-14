@@ -14,6 +14,4 @@ wss.on('connection', function connection(ws) {
   ws.send('something');
 
   ws.send('something else');
-
-  ws.close(1013, "YOOO");
 });

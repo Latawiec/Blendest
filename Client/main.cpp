@@ -10,33 +10,33 @@
 #include "Settings.hpp"
 
 #include "ServerConnection.hpp"
+#include "IListener.hpp"
  #include <thread>
 
 
 int main(int argc, const char* argv[]) {
   using namespace ftxui;
 
-    struct PrinterListener : public Connection::ServerConnection::IListener {
-        PrinterListener(const Connection::ServerConnection* connection)
-        : Connection::ServerConnection::IListener(connection) {}
+    struct PrinterListener : public Connection::IListener {
 
         virtual ~PrinterListener() = default;
 
-        void OnConnect(const boost::system::error_code& error) override {
-            std::cout << "Connect: " << error.what() << std::endl;
+        void OnConnect(const Connection::Error& error) override {
+            std::cout << "Connect: " << error.message << std::endl;
         }
-        void OnRead(const boost::system::error_code& error, const boost::beast::flat_buffer& data) override {
-            std::cout << "Read: " << error.what() << std::endl;
+        void OnRead(const Connection::Error& error, const Connection::Buffer& data) override {
+            std::cout << "Read: " << error.message << std::endl;
         }
-        void OnClose(const boost::beast::websocket::close_reason& reason) override {
-            std::cout << "Close: " << reason.reason << std::endl;
+        void OnClose(const Connection::Error& reason) override {
+            std::cout << "Close: " << reason.message << std::endl;
         }
     };
 
+    PrinterListener listener{};
     Connection::ServerConnection connection("localhost", 8080);
+    connection.AddListener(&listener);
     connection.Start();
 
-    PrinterListener listener{&connection};
   Settings settings;
 
   auto settingsComponent = settings.getComponent();
