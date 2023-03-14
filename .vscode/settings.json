@@ -43,6 +43,19 @@
         "tuple": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "csignal": "cpp",
+        "cstdarg": "cpp",
+        "cstring": "cpp",
+        "list": "cpp",
+        "future": "cpp",
+        "iomanip": "cpp",
+        "numeric": "cpp",
+        "typeindex": "cpp",
+        "*.ipp": "cpp",
+        "csetjmp": "cpp"
     }
 }

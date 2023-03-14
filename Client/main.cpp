@@ -8,12 +8,35 @@
 #include "ftxui/screen/color.hpp"  // for ftxui
 
 #include "Settings.hpp"
+
+#include "ServerConnection.hpp"
  #include <thread>
 
 
 int main(int argc, const char* argv[]) {
   using namespace ftxui;
 
+    struct PrinterListener : public Connection::ServerConnection::IListener {
+        PrinterListener(const Connection::ServerConnection* connection)
+        : Connection::ServerConnection::IListener(connection) {}
+
+        virtual ~PrinterListener() = default;
+
+        void OnConnect(const boost::system::error_code& error) override {
+            std::cout << "Connect: " << error.what() << std::endl;
+        }
+        void OnRead(const boost::system::error_code& error, const boost::beast::flat_buffer& data) override {
+            std::cout << "Read: " << error.what() << std::endl;
+        }
+        void OnClose(const boost::beast::websocket::close_reason& reason) override {
+            std::cout << "Close: " << reason.reason << std::endl;
+        }
+    };
+
+    Connection::ServerConnection connection("localhost", 8080);
+    connection.Start();
+
+    PrinterListener listener{&connection};
   Settings settings;
 
   auto settingsComponent = settings.getComponent();

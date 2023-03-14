@@ -10,6 +10,6 @@ class Settings {
 
 public:
     Settings();
-
+    ftxui::Component& operator()();
     ftxui::Component& getComponent();
 };

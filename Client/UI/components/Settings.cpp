@@ -23,6 +23,10 @@ Settings::Settings()
     });
 }
 
+ftxui::Component& Settings::operator()() {
+    return this->_component;
+}
+
 ftxui::Component& Settings::getComponent()
 {
     return this->_component;

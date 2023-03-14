@@ -16,7 +16,7 @@ if(NOT ftxui_POPULATED)
 endif()
 # ------------------------------------------------------------------------------
 
-project(Components
+project(UI.Components
     LANGUAGES CXX
     VERSION 1.0.0
 )
