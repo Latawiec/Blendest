@@ -8,8 +8,9 @@
 #include "ftxui/screen/color.hpp"  // for ftxui
 
 #include "Settings.hpp"
+#include "Connection.hpp"
 
-#include "ServerConnection.hpp"
+#include "WebsocketConnection.hpp"
 #include "IListener.hpp"
  #include <thread>
 
@@ -22,45 +23,52 @@ int main(int argc, const char* argv[]) {
         virtual ~PrinterListener() = default;
 
         void OnConnect(const Connection::Error& error) override {
-            std::cout << "Connect: " << error.message << std::endl;
+            //std::cout << "Connect: " << error.message << std::endl;
         }
         void OnRead(const Connection::Error& error, const Connection::Buffer& data) override {
-            std::cout << "Read: " << error.message << std::endl;
+            //std::cout << "Read: " << error.message << std::endl;
         }
         void OnClose(const Connection::Error& reason) override {
-            std::cout << "Close: " << reason.message << std::endl;
+            //std::cout << "Close: " << reason.message << std::endl;
         }
     };
 
     PrinterListener listener{};
-    Connection::ServerConnection connection("localhost", 8080);
-    connection.AddListener(&listener);
-    connection.Start();
+    Connection::WebsocketConnection wsConnection("localhost", 8080);
+    wsConnection.AddListener(&listener);
+    wsConnection.Start();
 
-  Settings settings;
+  UI::Settings settings;
+  UI::Connection connection;
 
   auto settingsComponent = settings.getComponent();
+  auto connectionComponent = connection.getComponent();
 
-  auto document =  Renderer(settingsComponent, [&] {
-      return vbox({
-          hbox({
-              text("north-west"),
-              filler(),
-              text("north-east"),
-          }),
-          filler(),
-          hbox({
-              filler(),
-              text("center"),
-              filler(),
-          }),
-          filler(),
-          hbox({
-              text("south-west"),
-              filler(),
-              text("south-east"),
-          }),
-          settingsComponent->Render()
+  auto component = Container::Horizontal({
+    settingsComponent,
+    connectionComponent
+  });
+
+  auto document =  Renderer(component, [&] {
+      return hbox({
+        //   hbox({
+        //       text("north-west"),
+        //       filler(),
+        //       text("north-east"),
+        //   }),
+        //   filler(),
+        //   hbox({
+        //       filler(),
+        //       text("center"),
+        //       filler(),
+        //   }),
+        //   filler(),
+        //   hbox({
+        //       text("south-west"),
+        //       filler(),
+        //       text("south-east"),
+        //   }),
+          component->Render(),
       });
     });
 //   auto screen = Screen::Create(Dimension::Full());

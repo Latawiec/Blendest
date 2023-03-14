@@ -5,6 +5,7 @@
 
 using namespace ftxui;
 
+namespace UI {
 
 Settings::Settings()
 : _maxThreadsAvailable(std::thread::hardware_concurrency())
@@ -23,11 +24,9 @@ Settings::Settings()
     });
 }
 
-ftxui::Component& Settings::operator()() {
+ftxui::Component Settings::getComponent()
+{
     return this->_component;
 }
 
-ftxui::Component& Settings::getComponent()
-{
-    return this->_component;
 }

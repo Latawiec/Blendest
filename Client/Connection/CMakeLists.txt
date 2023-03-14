@@ -25,7 +25,7 @@ endif()
 project(Connection)
 
 add_library(${PROJECT_NAME}
-    ServerConnection.cpp
+    WebsocketConnection.cpp
     HandlerThread.cpp
     IListener.cpp
 )

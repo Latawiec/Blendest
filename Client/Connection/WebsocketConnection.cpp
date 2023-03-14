@@ -1,4 +1,4 @@
-#include "./public/ServerConnection.hpp"
+#include "./public/WebsocketConnection.hpp"
 
 #include "HandlerThread.hpp"
 
@@ -7,29 +7,29 @@
 
 namespace Connection {
 
-ServerConnection::ServerConnection(std::string host, uint16_t port, uint64_t loopIntervalMs, uint64_t tryReconnectTimeMs)
+WebsocketConnection::WebsocketConnection(std::string host, uint16_t port, uint64_t loopIntervalMs, uint64_t tryReconnectTimeMs)
 : _tmpHandlerThreadPtr(std::make_unique<HandlerThread>(host, port, loopIntervalMs, tryReconnectTimeMs))
 , _handlerThreadPtr(_tmpHandlerThreadPtr.get())
 {}
 
-ServerConnection::~ServerConnection()
+WebsocketConnection::~WebsocketConnection()
 {
     _handlerThreadPtr->ConnectionDiscarded();
 } 
 
-ServerConnection& ServerConnection::AddListener(IListener* listener)
+WebsocketConnection& WebsocketConnection::AddListener(IListener* listener)
 {
     _handlerThreadPtr->RegisterListener(listener);
     return *this;
 }
 
-ServerConnection& ServerConnection::RemoveListener(IListener* listener)
+WebsocketConnection& WebsocketConnection::RemoveListener(IListener* listener)
 {
     _handlerThreadPtr->UnregisterListener(listener);
     return *this;
 }
 
-ServerConnection& Connection::ServerConnection::Start()
+WebsocketConnection& Connection::WebsocketConnection::Start()
 {
     std::thread handler([](std::unique_ptr<HandlerThread> handlerThread){
         handlerThread->Loop();

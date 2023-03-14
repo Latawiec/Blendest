@@ -23,6 +23,7 @@ project(UI.Components
 
 add_library(${PROJECT_NAME}
     Settings.cpp
+    Connection.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
