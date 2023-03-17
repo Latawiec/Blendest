@@ -4,7 +4,7 @@ namespace UI {
 namespace Views {
 
 class Main {
-
+void Render();
 };
 
 }

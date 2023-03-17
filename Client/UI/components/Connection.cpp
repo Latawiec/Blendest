@@ -3,19 +3,45 @@
 #include "ftxui/dom/elements.hpp"
 
 #include <string>
+#include <regex>
 #include <chrono>
 
 using namespace ftxui;
 
 namespace UI {
 
+namespace /* anonymous */ {
+    const std::regex hostInputRegex("^((?:25[0-5]|(?:2[0-4]|1\\d|[1-9]|)\\d)(?:(?:\\.(?:25[0-5]|(?:2[0-4]|1\\d|[1-9]|)\\d)?){0,3}))?");
+    const std::regex portInputRegex("^([1-9][0-9]{0,5})?");
+}
+
 Connection::Connection()
 {
-    _hostInput = Input(&_host, "IP Address") | size(WIDTH, GREATER_THAN, 20) | flex_grow;
-    _portInput = Input(&_port, "Socket") | size(WIDTH, GREATER_THAN, 20) | flex_grow;
+    InputOption hostInputOptions;
+    hostInputOptions.on_change = [&]{
+        if (std::regex_match(_hostInputStr, hostInputRegex)) {
+            _host = _hostInputStr;
+        } else {
+            _hostInputStr = _host;
+        }
+
+    };
+
+    InputOption portInputOptions;
+    portInputOptions.on_change = [&]{
+        if (std::regex_match(_portInputStr, portInputRegex)) {
+            _port = _portInputStr;
+        } else {
+            _portInputStr = _port;
+        }
+    };
+    
+
+    _hostInput = Input(&_hostInputStr, "IP Address", hostInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
+    _portInput = Input(&_portInputStr, "Socket", portInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
     _connectionButton = Container::Vertical({
-        Button("Connect", [&]{ _showMonitoring = true; _showInitialize = false; }) | Maybe(&_showInitialize),
-        Button("Disconnect", [&]{ _showMonitoring = false; _showInitialize = true; }) | Maybe(&_showMonitoring),
+        Button("Connect", [&]{ this->OnConnect(_host, _port); _showMonitoring = true; _showInitialize = false; }) | Maybe(&_showInitialize),
+        Button("Disconnect", [&]{ this->OnDisconnect(_host, _port); _showMonitoring = false; _showInitialize = true; }) | Maybe(&_showMonitoring),
     }) | align_right;
 
     _connectionInput = Container::Vertical({
@@ -65,6 +91,20 @@ ftxui::Component Connection::getComponent()
             _component->Render()
         ) | size(WIDTH, GREATER_THAN, 40);
     });
+}
+
+void Connection::SetConnectionStatus(Status status) 
+{
+    switch(status){
+        case Connection::Status::CONNECTED:
+        _showReconnecting = false;
+        _showConnected = true;
+        break;
+        case Connection::Status::RECONNECTING:
+        _showReconnecting = true;
+        _showConnected = false;
+        break;
+    }
 }
 
 }

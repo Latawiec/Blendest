@@ -13,6 +13,16 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true
+        },
+        {
+            "name": "Test",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Client/build/Connection/Debug/test.exe",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true
         }
     ]
 }

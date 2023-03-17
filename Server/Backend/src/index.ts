@@ -11,6 +11,10 @@ wss.on('connection', function connection(ws) {
     console.log('received: %s', data);
   });
 
+  ws.on('close', function close(code, reason) {
+    console.log("Closed: ", code, " ", reason);
+  })
+
   ws.send('something');
 
   ws.send('something else');

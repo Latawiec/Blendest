@@ -8,7 +8,9 @@ class Connection {
     std::string _host = "";
     std::string _port = "";
 
+    std::string _hostInputStr;
     ftxui::Component _hostInput;
+    std::string _portInputStr;
     ftxui::Component _portInput;
 
     ftxui::Component _connectionInput;
@@ -29,6 +31,19 @@ class Connection {
 public:
     Connection();
     ftxui::Component getComponent();
+
+    using OnConnectFunctionT = std::function<void(const std::string&, const std::string&)>;
+    using OnDisconnectFunctionT = std::function<void(const std::string&, const std::string&)>;
+
+    OnConnectFunctionT OnConnect;
+    OnDisconnectFunctionT OnDisconnect;
+
+    enum Status {
+        RECONNECTING,
+        CONNECTED
+    };
+
+    void SetConnectionStatus(Status s);
 };
 
 }

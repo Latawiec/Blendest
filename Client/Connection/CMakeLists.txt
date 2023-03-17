@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 
 # --- Fetch Boost --------------------------------------------------------------
 include(FetchContent)
-set(BOOST_INCLUDE_LIBRARIES thread system beast program_options)
+set(BOOST_INCLUDE_LIBRARIES thread system beast program_options signals2)
 set (BOOST_ENABLE_CMAKE ON)
 
 FetchContent_Declare(boost
@@ -25,9 +25,8 @@ endif()
 project(Connection)
 
 add_library(${PROJECT_NAME}
-    WebsocketConnection.cpp
-    HandlerThread.cpp
-    IListener.cpp
+    BackgroundWebsocket.cpp
+    HandlerPayload.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -37,4 +36,15 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Boost::beast
 )
+
+
+add_executable(test
+    test.cpp
+)
+
+target_link_libraries(test
+    PRIVATE Boost::beast
+    PRIVATE Boost::signals2
+)
+
 
