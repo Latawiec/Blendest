@@ -115,7 +115,7 @@ Process::Process(const std::string& exePath, const std::vector<std::string>& arg
 
 Process::~Process()
 {
-    if (_process != nullptr && _process->valid()) {
+    if (_process != nullptr && _process->running()) {
         _process->terminate();
     }
 }
@@ -139,7 +139,6 @@ std::future<int>& Process::Start()
     }
 
     this->_return = std::async([&](boost::process::ipstream stdOut, boost::process::ipstream stdErr) -> int {
-
         do {
             std::string line;
             {
