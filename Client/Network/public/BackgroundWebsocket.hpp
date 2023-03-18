@@ -7,7 +7,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace Connection
+namespace Network
 {
     class HandlerPayload;
     class IListener;
@@ -30,4 +30,4 @@ namespace Connection
         void UnregisterListener(IListener*listener);
     };
 
-} // namespace Connection
+} // namespace Network

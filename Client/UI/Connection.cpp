@@ -41,8 +41,8 @@ Connection::Connection()
     _hostInput = Input(&_hostInputStr, "IP Address", hostInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
     _portInput = Input(&_portInputStr, "Socket", portInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
     _connectionButton = Container::Vertical({
-        Button("Connect", [&]{ this->OnConnect(_host, _port); _showMonitoring = true; _showInitialize = false; }) | Maybe(&_showInitialize),
-        Button("Disconnect", [&]{ this->OnDisconnect(_host, _port); _showMonitoring = false; _showInitialize = true; }) | Maybe(&_showMonitoring),
+        Button("Connect", [&]{ this->OnConnectClick(_host, _port); _showMonitoring = true; _showInitialize = false; }) | Maybe(&_showInitialize),
+        Button("Disconnect", [&]{ this->OnDisconnectClick(_host, _port); _showMonitoring = false; _showInitialize = true; }) | Maybe(&_showMonitoring),
     }) | align_right;
 
     _connectionInput = Container::Vertical({

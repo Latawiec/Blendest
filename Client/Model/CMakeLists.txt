@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.26)
-project(App)
+
+project(Model)
 
 add_library(${PROJECT_NAME}
-    App.cpp
+    Connection.cpp
+    Main.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -12,13 +14,9 @@ target_include_directories(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
     UI
     Network
-    System
-    Model
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE UI
     PRIVATE Network
-    PRIVATE System
-    PRIVATE Model
 )

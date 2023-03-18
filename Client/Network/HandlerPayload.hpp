@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
-namespace Connection {
+namespace Network {
 
 class HandlerPayload {
 
@@ -62,4 +62,4 @@ private:
     std::future<void> do_stop();
 };
 
-} // namespace Connection
+} // namespace Network

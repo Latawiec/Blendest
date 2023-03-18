@@ -44,8 +44,8 @@ public:
     using OnConnectFunctionT = std::function<void(const std::string&, const std::string&)>;
     using OnDisconnectFunctionT = std::function<void(const std::string&, const std::string&)>;
 
-    OnConnectFunctionT OnConnect;
-    OnDisconnectFunctionT OnDisconnect;
+    OnConnectFunctionT OnConnectClick;
+    OnDisconnectFunctionT OnDisconnectClick;
 
     enum Status {
         RECONNECTING,

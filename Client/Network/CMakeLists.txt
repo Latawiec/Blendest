@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(Connection)
+project(Network)
 
 add_library(${PROJECT_NAME}
     BackgroundWebsocket.cpp

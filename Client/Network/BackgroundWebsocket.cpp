@@ -7,7 +7,7 @@
 #include "HandlerPayload.hpp"
 #include "./public/IListener.hpp"
 
-namespace Connection {
+namespace Network {
 
 BackgroundWebsocket::BackgroundWebsocket(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
 : _payloadHandle{ std::make_unique<HandlerPayload>(host, port, reconnectTimeoutMs) }

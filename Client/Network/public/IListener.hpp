@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string>
 
-namespace Connection
+namespace Network
 {
 
     struct Error

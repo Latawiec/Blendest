@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace Connection {
+namespace Network {
 
 HandlerPayload::HandlerPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
 : _host(host)
