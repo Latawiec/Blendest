@@ -10,6 +10,12 @@
 
 namespace /* anonymous */ {
 
+    void TryCloseHandle(HANDLE& handle) 
+    {
+        if (handle != NULL) CloseHandle(handle);
+        handle = NULL;
+    }
+
     HANDLE createProcess(
         const std::string& commandLine,
         HANDLE& stdOut_Rd, HANDLE& stdOut_Wr,
@@ -27,16 +33,18 @@ namespace /* anonymous */ {
             if (!CreatePipe(&stdOut_Rd, &stdOut_Wr, &saAttr, 0) ||
                 !SetHandleInformation(stdOut_Rd, HANDLE_FLAG_INHERIT, 0))
             {
-                // I don't know what to do here now.
-                std::terminate();
+                TryCloseHandle(stdOut_Rd);
+                TryCloseHandle(stdOut_Wr);
+                return NULL;
             }
 
             // Create StdErr
             if (!CreatePipe(&stdErr_Rd, &stdErr_Wr, &saAttr, 0) ||
                 !SetHandleInformation(stdErr_Rd, HANDLE_FLAG_INHERIT, 0))
             {
-                // I don't know what to do here now.
-                std::terminate();
+                TryCloseHandle(stdErr_Rd);
+                TryCloseHandle(stdErr_Wr);
+                return NULL;
             }
 
         }
@@ -67,15 +75,17 @@ namespace /* anonymous */ {
                 &piProcInfo);         // receives PROCESS_INFORMATION 
 
             if ( !bSuccess ) {
-                const auto res = HRESULT_FROM_WIN32(GetLastError());
-                std::terminate();
+                TryCloseHandle(stdOut_Rd);
+                TryCloseHandle(stdOut_Wr);
+                TryCloseHandle(stdErr_Rd);
+                TryCloseHandle(stdErr_Wr);
+                return NULL;
             }
             
-            // Wouldn't it be better to keep the process handle??
-            CloseHandle(piProcInfo.hThread);
-
-            CloseHandle(stdOut_Wr);
-            CloseHandle(stdErr_Wr);
+            // Close unused handles immediately.
+            TryCloseHandle(piProcInfo.hThread);
+            TryCloseHandle(stdOut_Wr);
+            TryCloseHandle(stdErr_Wr);
 
             return piProcInfo.hProcess;
         }
@@ -104,13 +114,16 @@ Process::Process(const std::string& exePath, const std::vector<std::string>& arg
 
 Process::~Process()
 {
-    if (_processHandle != NULL) {
+    TryCloseHandle(_handles._StdERR_Rd);
+    TryCloseHandle(_handles._StdOUT_Rd);
+
+    if (_handles._processHandle != NULL) {
         DWORD exitCode;
-        GetExitCodeProcess(_processHandle, &exitCode);
+        GetExitCodeProcess(_handles._processHandle, &exitCode);
         if (exitCode == STILL_ACTIVE) {
-            TerminateProcess(_processHandle, 1);
+            TerminateProcess(_handles._processHandle, 1);
         }
-        CloseHandle(_processHandle);
+        CloseHandle(_handles._processHandle);
     }
 }
 
@@ -126,31 +139,41 @@ std::future<int>& Process::Start()
     HANDLE hStd_OUT_Wr = NULL;
     HANDLE hStd_ERR_Rd = NULL;
     HANDLE hStd_ERR_Wr = NULL;
-    _processHandle = createProcess(commandLineBuild.str(), hStd_OUT_Rd, hStd_OUT_Wr, hStd_ERR_Rd, hStd_ERR_Wr);
+    _handles._processHandle = createProcess(commandLineBuild.str(), hStd_OUT_Rd, hStd_OUT_Wr, hStd_ERR_Rd, hStd_ERR_Wr);
 
-    this->_return = std::async([&](HANDLE processHandle, HANDLE stdOutRead, HANDLE stdErrRead) -> int {
-        constexpr int timeout = 1000;
-        while( true ) {
-            {
-                std::lock_guard<std::mutex> lock{ _stdOutLock };
-                ReadFromPipe(stdOutRead, _stdOut);
+
+    if (_handles._processHandle != NULL) {
+        
+        _handles._StdOUT_Rd = hStd_OUT_Rd;
+        _handles._StdERR_Rd = hStd_ERR_Rd;
+        
+        this->_return = std::async([&](HANDLE processHandle, HANDLE stdOutRead, HANDLE stdErrRead) -> int {
+            constexpr int timeout = 1000;
+            while( true ) {
+                {
+                    std::lock_guard<std::mutex> lock{ _stdOutLock };
+                    ReadFromPipe(stdOutRead, _stdOut);
+                }
+                {
+                    std::lock_guard<std::mutex> lock{ _stdErrLock };
+                    ReadFromPipe(stdErrRead, _stdErr);
+                }
+                auto res = WaitForSingleObject( processHandle, timeout );
+                if (res != WAIT_TIMEOUT)
+                    break;
             }
-            {
-                std::lock_guard<std::mutex> lock{ _stdErrLock };
-                ReadFromPipe(stdErrRead, _stdErr);
+            
+            DWORD exitCode = 1;                                  
+            if (GetExitCodeProcess(processHandle, &exitCode)) {
+                return exitCode;
             }
-            auto res = WaitForSingleObject( _processHandle, timeout );
-            if (res != WAIT_TIMEOUT)
-                break;
-        }
-
-        CloseHandle(stdOutRead);
-        CloseHandle(stdErrRead);
-
-        DWORD exitCode = 1;                                     
-        GetExitCodeProcess(processHandle, &exitCode);
-        return exitCode;
-    }, _processHandle, hStd_OUT_Rd, hStd_ERR_Rd);
+            return 1;
+        }, _handles._processHandle, _handles._StdOUT_Rd, _handles._StdERR_Rd);
+    } else {
+        std::promise<int> promise;
+        promise.set_value(1);
+        this->_return = promise.get_future();
+    }
 
     return this->_return;
 }

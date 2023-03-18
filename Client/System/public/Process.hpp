@@ -20,7 +20,11 @@ class Process {
     std::stringstream _stdErr;
     std::future<int> _return;
 // If windows...
-    HANDLE _processHandle;
+    struct {
+        HANDLE _processHandle = NULL;
+        HANDLE _StdOUT_Rd = NULL;
+        HANDLE _StdERR_Rd = NULL;
+    } _handles;
 
 public:
     Process(const std::string& exe, const std::vector<std::string>& args, const std::string& cwd = "");
