@@ -10,17 +10,13 @@ target_include_directories(${PROJECT_NAME}
 )
 
 add_dependencies(${PROJECT_NAME}
-    UI.Components
-    # UI.Views
+    UI
     Connection
-
+    System
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE UI.Components
-    # PRIVATE UI.Views
+    PRIVATE UI
     PRIVATE Connection
-    PRIVATE ftxui::screen
-    PRIVATE ftxui::dom
-    PRIVATE ftxui::component
+    PRIVATE System
 )

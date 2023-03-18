@@ -1,6 +1,7 @@
-#include "./public/Connection.hpp"
+#include "./public/components/Connection.hpp"
 
 #include "ftxui/dom/elements.hpp"
+#include "ftxui/component/component.hpp"
 
 #include <string>
 #include <regex>
@@ -9,6 +10,7 @@
 using namespace ftxui;
 
 namespace UI {
+namespace Component {
 
 namespace /* anonymous */ {
     const std::regex hostInputRegex("^((?:25[0-5]|(?:2[0-4]|1\\d|[1-9]|)\\d)(?:(?:\\.(?:25[0-5]|(?:2[0-4]|1\\d|[1-9]|)\\d)?){0,3}))?");
@@ -35,7 +37,6 @@ Connection::Connection()
             _portInputStr = _port;
         }
     };
-    
 
     _hostInput = Input(&_hostInputStr, "IP Address", hostInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
     _portInput = Input(&_portInputStr, "Socket", portInputOptions) | size(WIDTH, GREATER_THAN, 20) | flex_grow;
@@ -107,4 +108,5 @@ void Connection::SetConnectionStatus(Status status)
     }
 }
 
+}
 }

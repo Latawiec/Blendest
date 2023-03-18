@@ -1,36 +1,45 @@
 #pragma once
-#include "ftxui/component/component.hpp"  // for Slider, Checkbox, Vertical, Renderer, Button, Input, Menu, Radiobox, Toggle
+
+#include <string>
+#include <memory>
+#include <functional>
+
+namespace ftxui {
+class ComponentBase;
+}
 
 namespace UI {
+namespace Component {
 
 class Connection {
-    
+    using Component = std::shared_ptr<ftxui::ComponentBase>;
+
     std::string _host = "";
     std::string _port = "";
 
     std::string _hostInputStr;
-    ftxui::Component _hostInput;
+    Component _hostInput;
     std::string _portInputStr;
-    ftxui::Component _portInput;
+    Component _portInput;
 
-    ftxui::Component _connectionInput;
-    ftxui::Component _connectionDisplay;
-    ftxui::Component _connectionStatus;
+    Component _connectionInput;
+    Component _connectionDisplay;
+    Component _connectionStatus;
 
-    ftxui::Component _connectionButton;
+    Component _connectionButton;
 
     std::string _errorMessage;
 
     bool _showInitialize = true;
     bool _showMonitoring = false;
 
-    bool _showReconnecting = false;
-    bool _showConnected = true;
-    ftxui::Component _component;
+    bool _showReconnecting = true;
+    bool _showConnected = false;
+    Component _component;
 
 public:
     Connection();
-    ftxui::Component getComponent();
+    Component getComponent();
 
     using OnConnectFunctionT = std::function<void(const std::string&, const std::string&)>;
     using OnDisconnectFunctionT = std::function<void(const std::string&, const std::string&)>;
@@ -46,4 +55,5 @@ public:
     void SetConnectionStatus(Status s);
 };
 
+}
 }

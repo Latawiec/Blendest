@@ -1,21 +1,18 @@
 #include "./public/App.hpp"
 
-#include <stdio.h>                                // for getchar
-#include <ftxui/dom/elements.hpp>                 // for filler, text, hbox, vbox
-#include <ftxui/screen/screen.hpp>                // for Full, Screen
-#include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
-#include <memory>                                 // for allocator
+#include <components/Settings.hpp>
+#include <components/Connection.hpp>
+#include <views/Main.hpp>
 
-#include "ftxui/dom/node.hpp"     // for Render
-#include "ftxui/screen/color.hpp" // for ftxui
+#include <BackgroundWebsocket.hpp>
+#include <IListener.hpp>
+#include <Process.hpp>
 
-#include "Settings.hpp"
-#include "Connection.hpp"
-
-#include "BackgroundWebsocket.hpp"
-#include "IListener.hpp"
 #include <thread>
 #include <optional>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 void App::Run()
 {
@@ -23,19 +20,19 @@ void App::Run()
 
     struct ConnectionListener : public Connection::IListener
     {
-        UI::Connection& connectionComponent;
-        ConnectionListener(UI::Connection& component)
+        UI::Component::Connection& connectionComponent;
+        ConnectionListener(UI::Component::Connection& component)
         : connectionComponent(component) {}
 
         virtual ~ConnectionListener() = default;
 
         void OnError(const Connection::Error& error) override
         {
-            connectionComponent.SetConnectionStatus(UI::Connection::Status::RECONNECTING);
+            connectionComponent.SetConnectionStatus(UI::Component::Connection::Status::RECONNECTING);
         }
         void OnMessage(const Connection::Buffer& data) override
         {
-            connectionComponent.SetConnectionStatus(UI::Connection::Status::CONNECTED);
+            connectionComponent.SetConnectionStatus(UI::Component::Connection::Status::CONNECTED);
         }
         void OnDestroy() override
         {
@@ -44,51 +41,26 @@ void App::Run()
 
     std::optional<Connection::BackgroundWebsocket> wsConnectionOpt = std::nullopt;
 
-    UI::Settings settings;
-    UI::Connection connection;
-    ConnectionListener listener{connection};
+    UI::View::Main mainView;
+    ConnectionListener listener{mainView.components.connection};
 
-    connection.OnConnect = [&](const std::string& host, const std::string& port) {
+    mainView.components.connection.OnConnect = [&](const std::string& host, const std::string& port) {
         wsConnectionOpt.emplace(host, port);
         wsConnectionOpt.value().RegisterListener(&listener);
         wsConnectionOpt.value().Listen();
     };
 
-    connection.OnDisconnect = [&](const std::string& host, const std::string& port) {
+    mainView.components.connection.OnDisconnect = [&](const std::string& host, const std::string& port) {
         wsConnectionOpt.reset();
     };
 
-    auto settingsComponent = settings.getComponent();
-    auto connectionComponent = connection.getComponent();
+    {
+        System::Process p{ "C:\\Program Files\\Blender Foundation\\Blender 3.3\\blender.exe", { "--version"} };
+        p.Start().wait();
+        const std::string stdOut = p.ReadStdOut();
+        const std::string stdErr = p.ReadStdErr();
+    }
 
-    auto component = Container::Horizontal({settingsComponent,
-                                            connectionComponent});
 
-    auto document = Renderer(component, [&]
-                             { return hbox({
-                                   //   hbox({
-                                   //       text("north-west"),
-                                   //       filler(),
-                                   //       text("north-east"),
-                                   //   }),
-                                   //   filler(),
-                                   //   hbox({
-                                   //       filler(),
-                                   //       text("center"),
-                                   //       filler(),
-                                   //   }),
-                                   //   filler(),
-                                   //   hbox({
-                                   //       text("south-west"),
-                                   //       filler(),
-                                   //       text("south-east"),
-                                   //   }),
-                                   component->Render(),
-                               }); });
-    //   auto screen = Screen::Create(Dimension::Full());
-    //   Render(screen, document);
-    // screen.Print();
-    // getchar();
-    auto screen = ScreenInteractive::FitComponent();
-    screen.Loop(document);
+    mainView.Loop();
 }

@@ -26,6 +26,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE App
 )
 
-add_subdirectory(UI)
 add_subdirectory(Connection)
+add_subdirectory(System)
+add_subdirectory(UI)
 add_subdirectory(App)
