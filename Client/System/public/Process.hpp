@@ -4,8 +4,11 @@
 #include <future>
 #include <thread>
 
-// If windows..
-#include <windows.h>
+namespace boost {
+namespace process {
+    class child;
+}
+}
 
 namespace System {
 
@@ -19,12 +22,8 @@ class Process {
     std::stringstream _stdOut;
     std::stringstream _stdErr;
     std::future<int> _return;
-// If windows...
-    struct {
-        HANDLE _processHandle = NULL;
-        HANDLE _StdOUT_Rd = NULL;
-        HANDLE _StdERR_Rd = NULL;
-    } _handles;
+
+    std::shared_ptr<boost::process::child>  _process;
 
 public:
     Process(const std::string& exe, const std::vector<std::string>& args, const std::string& cwd = "");

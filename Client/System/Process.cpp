@@ -1,9 +1,13 @@
-#include "../public/Process.hpp"
+#include "./public/Process.hpp"
 
-#include <boost/process/child.hpp>
+#include <boost/process.hpp>
 
 #include <string>
+#include <sstream>
 #include <vector>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 namespace /* anonymous */ {
 
@@ -111,7 +115,9 @@ Process::Process(const std::string& exePath, const std::vector<std::string>& arg
 
 Process::~Process()
 {
-    _process->terminate();
+    if (_process != nullptr && _process->valid()) {
+        _process->terminate();
+    }
 }
 
 std::future<int>& Process::Start()
@@ -121,72 +127,42 @@ std::future<int>& Process::Start()
     for (const auto& arg : _args) {
         commandLineBuild << " " << arg;
     }
-    this->_return = std::async([&] {
-        boost::process::ipstream bpStdOut;
-        boost::process::ipstream bpStdErr;
+    boost::process::ipstream bpStdOut;
+    boost::process::ipstream bpStdErr;
 
-        _process = std::make_shared<boost::process::child>(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
-    
-        while(!_process.wait_for(1s)) {
+    _process = make_shared<boost::process::child>(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
+    if (!_process->valid()) {
+        auto promise = std::promise<int>();
+        this->_return = promise.get_future();
+        promise.set_value(1);
+        return this->_return;
+    }
+
+    this->_return = std::async([&](boost::process::ipstream stdOut, boost::process::ipstream stdErr) -> int {
+
+        do {
             std::string line;
             {
                 std::lock_guard<std::mutex> lock{ _stdOutLock };
-                while(std::getline(bStdOut, line)) {
+                while(std::getline(stdOut, line)) {
                     _stdOut << line << std::endl;
                 }
             }
             {
                 std::lock_guard<std::mutex> lock{ _stdErrLock };
-                while(std::getline(bStdErr, line)) {
+                while(std::getline(stdErr, line)) {
                     _stdErr << line << std::endl;
                 }
             }
+        } while(!_process->wait_for(1s));
+
+        if (!_process->running()) {
+            return _process->exit_code();
         }
-    }); 
+        return 1;
+    }, std::move(bpStdOut), std::move(bpStdErr)); 
 
-    // HANDLE hStd_OUT_Rd = NULL;
-    // HANDLE hStd_OUT_Wr = NULL;
-    // HANDLE hStd_ERR_Rd = NULL;
-    // HANDLE hStd_ERR_Wr = NULL;
-    // _handles._processHandle = createProcess(commandLineBuild.str(), hStd_OUT_Rd, hStd_OUT_Wr, hStd_ERR_Rd, hStd_ERR_Wr);
-
-
-    // if (_handles._processHandle != NULL) {
-        
-    //     _handles._StdOUT_Rd = hStd_OUT_Rd;
-    //     _handles._StdERR_Rd = hStd_ERR_Rd;
-        
-    //     this->_return = std::async([&](HANDLE processHandle, HANDLE stdOutRead, HANDLE stdErrRead) -> int {
-
-    //         _po
-    //         constexpr int timeout = 1000;
-    //         while( true ) {
-    //             {
-    //                 std::lock_guard<std::mutex> lock{ _stdOutLock };
-    //                 ReadFromPipe(stdOutRead, _stdOut);
-    //             }
-    //             {
-    //                 std::lock_guard<std::mutex> lock{ _stdErrLock };
-    //                 ReadFromPipe(stdErrRead, _stdErr);
-    //             }
-    //             auto res = WaitForSingleObject( processHandle, timeout );
-    //             if (res != WAIT_TIMEOUT)
-    //                 break;
-    //         }
-            
-    //         DWORD exitCode = 1;                                  
-    //         if (GetExitCodeProcess(processHandle, &exitCode)) {
-    //             return exitCode;
-    //         }
-    //         return 1;
-    //     }, _handles._processHandle, _handles._StdOUT_Rd, _handles._StdERR_Rd);
-    // } else {
-    //     std::promise<int> promise;
-    //     promise.set_value(1);
-    //     this->_return = promise.get_future();
-    // }
-
-    // return this->_return;
+    return this->_return;
 }
 
 std::string Process::ReadStdOut()
