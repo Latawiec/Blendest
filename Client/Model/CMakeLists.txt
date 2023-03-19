@@ -4,6 +4,7 @@ project(Model)
 
 add_library(${PROJECT_NAME}
     Connection.cpp
+    Settings.cpp
     Main.cpp
 )
 
@@ -14,9 +15,11 @@ target_include_directories(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
     UI
     Network
+    System
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE UI
-    PRIVATE Network
+    PUBLIC UI
+    PUBLIC Network
+    PUBLIC System
 )

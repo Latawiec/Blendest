@@ -1,8 +1,8 @@
 #pragma once 
 
 #include <components/Connection.hpp>
-#include <IListener.hpp>
 #include <BackgroundWebsocket.hpp>
+#include <IListener.hpp>
 
 
 namespace Model {

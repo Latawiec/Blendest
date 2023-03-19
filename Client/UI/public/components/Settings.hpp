@@ -21,9 +21,9 @@ private:
     using Component = std::shared_ptr<ftxui::ComponentBase>;
     
     // Threads settings
-    const int _maxThreadsAvailable;
-    int _threadsSelected; // Currently selected
-    int _threadsCount; // Currently published. Just for diff so I can pop OnChange.
+    int _maxThreadsAvailable = 12;
+    int _threadsSelected = 1; // Currently selected
+    int _threadsCount = 1; // Currently published. Just for diff so I can pop OnChange.
     Component _threadSlider;
 
     // Blender path settings
@@ -47,6 +47,10 @@ public:
     void setOnBlenderDirChange(BlenderDirChangeCallbackT cb, bool invokeAfterSet = true);
     void setOnThreadsCountChange(ThreadsCountChangeCallbackT cb, bool invokeAfterSet = true);
 
+    void setMaxThreadsCount(const int count);
+    void setUtilizedThreadsCount(const int count);
+
+    void setBlenderDir(const std::string& path);
     void setBlenderDirStatus(const std::string& status);
 };
 

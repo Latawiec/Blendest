@@ -12,8 +12,6 @@ namespace UI {
 namespace Component {
 
 Settings::Settings()
-: _maxThreadsAvailable(std::thread::hardware_concurrency())
-, _threadsSelected(std::thread::hardware_concurrency())
 {
     _threadSlider = Slider("", &_threadsSelected, 1, _maxThreadsAvailable, 1);
     InputOption blenderDirInputOption;
@@ -27,7 +25,7 @@ Settings::Settings()
     auto threadsSetting = Renderer(_threadSlider, [&] {
         if (_threadsCount != _threadsSelected) {
             if (_onThreadsCountChange) {
-                _threadsCount = _threadsSelected;
+                _threadsCount = std::min(_threadsSelected, _maxThreadsAvailable);
                 _onThreadsCountChange(_threadsSelected);
             }
         }
@@ -36,7 +34,6 @@ Settings::Settings()
             hbox({ _threadSlider->Render() | flex_grow, text(std::to_string(_threadsSelected) + '/' + std::to_string(_maxThreadsAvailable)) | align_right | size(WIDTH, EQUAL, 5) }),
         });
     });
-
 
     _blenderDirStatus = Renderer([&]{
         return text(std::string("[") + _blenderDirStatusStr + "]");
@@ -66,10 +63,6 @@ ftxui::Component Settings::getComponent()
     return this->_component;
 }
 
-void Settings::setBlenderDirStatus(const std::string& status) {
-    this->_blenderDirStatusStr = status;
-}
-
 void Settings::setOnBlenderDirChange(BlenderDirChangeCallbackT cb, bool invokeAfterSet) {
     _onBlenderDirChange = cb;
     if (invokeAfterSet) {
@@ -83,6 +76,31 @@ void Settings::setOnThreadsCountChange(ThreadsCountChangeCallbackT cb, bool invo
         _onThreadsCountChange(_threadsCount);
     }
 }
+
+void Settings::setMaxThreadsCount(const int count)
+{
+    this->_maxThreadsAvailable = count;
+    auto parent = _threadSlider->Parent();
+    _threadSlider->Detach();
+    _threadSlider = Slider("", &_threadsSelected, 1, _maxThreadsAvailable, 1);
+    parent->Add(_threadSlider);
+}
+
+void Settings::setUtilizedThreadsCount(const int count)
+{
+    this->_threadsSelected = count;
+}
+
+void Settings::setBlenderDir(const std::string& path)
+{
+    this->_blenderDirInputStr = path;
+}
+
+void Settings::setBlenderDirStatus(const std::string& status)
+{
+    this->_blenderDirStatusStr = status;
+}
+
 
 }
 }
