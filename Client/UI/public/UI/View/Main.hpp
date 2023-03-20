@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "../components/Settings.hpp"
-#include "../components/Connection.hpp"
+#include "../Component/Settings.hpp"
+#include "../Component/Connection.hpp"
 
 namespace ftxui {
 class ComponentBase;

@@ -1,11 +1,11 @@
-#include "./public/BackgroundWebsocket.hpp"
+#include "./public/Network/BackgroundWebsocket.hpp"
 
 #include <boost/asio/use_future.hpp>
 #include <optional>
 #include <memory>
 
 #include "HandlerPayload.hpp"
-#include "./public/IListener.hpp"
+#include "public/Network/IListener.hpp"
 
 namespace Network {
 

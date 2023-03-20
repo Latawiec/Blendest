@@ -1,4 +1,4 @@
-#include "./public/Connection.hpp"
+#include "public/Model/Connection.hpp"
 
 namespace Model {
 
@@ -29,6 +29,8 @@ Connection::Connection(UI::Component::Connection& connectionView)
         wsConnectionOpt.emplace(host, port);
         wsConnectionOpt.value().RegisterListener(&_wsListener);
         wsConnectionOpt.value().Listen();
+        _data.hostAddress = host;
+        _data.hostPort = port;
     };
 
     _view.OnDisconnectClick = [&](const std::string& host, const std::string& port) {
@@ -37,5 +39,17 @@ Connection::Connection(UI::Component::Connection& connectionView)
 }
 
 Connection::~Connection() {}
+
+const Connection::Data& Connection::getData() const
+{
+    return this->_data;
+}
+
+void Connection::setData(Connection::Data newData)
+{
+    _view.setHostAddress(newData.hostAddress);
+    _view.setHostPort(newData.hostPort);
+    this->_data = std::move(newData);
+}
 
 }

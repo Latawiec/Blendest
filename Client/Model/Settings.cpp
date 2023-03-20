@@ -1,4 +1,4 @@
-#include "./public/Settings.hpp"
+#include "public/Model/Settings.hpp"
 
 #include <optional>
 #include <chrono>
@@ -61,14 +61,32 @@ Settings::Settings(UI::Component::Settings& view)
             } else {
                 _view.setBlenderDirStatus(VersionUnknownError);
             }
+            _data.blenderPath = newPath;
         } else {
             _view.setBlenderDirStatus(NotRespondingError);
             return;
         }
     });
 
+    _view.setOnThreadsCountChange([&](int newThreadsCount) {
+        _data.threadsCount = newThreadsCount;
+    });
+
     _view.setMaxThreadsCount(std::thread::hardware_concurrency());
     _view.setUtilizedThreadsCount(std::thread::hardware_concurrency());
 }
+
+const Settings::Data& Settings::getData() const
+{
+    return this->_data;
+}
+
+void Settings::setData(Settings::Data newData)
+{
+    _view.setUtilizedThreadsCount(newData.threadsCount);
+    _view.setBlenderDir(newData.blenderPath);
+    this->_data = newData;
+}
+
 
 }

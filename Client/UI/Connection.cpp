@@ -1,4 +1,4 @@
-#include "./public/components/Connection.hpp"
+#include "./public/UI/Component/Connection.hpp"
 
 #include "ftxui/dom/elements.hpp"
 #include "ftxui/component/component.hpp"
@@ -107,6 +107,19 @@ void Connection::SetConnectionStatus(Status status)
         break;
     }
 }
+
+void Connection::setHostAddress(std::string newAddress)
+{
+    this->_host = newAddress;
+    this->_hostInputStr = newAddress;
+}
+
+void Connection::setHostPort(std::string newPort)
+{
+    this->_port = newPort;
+    this->_portInputStr = newPort;
+}
+
 
 }
 }

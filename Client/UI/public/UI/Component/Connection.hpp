@@ -53,6 +53,8 @@ public:
     };
 
     void SetConnectionStatus(Status s);
+    void setHostAddress(std::string newAddress);
+    void setHostPort(std::string newPort);
 };
 
 }

@@ -1,5 +1,5 @@
 
-#include "App.hpp"
+#include <App/App.hpp>
 
 int main(int argc, const char* argv[]) {
   App app;

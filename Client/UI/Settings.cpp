@@ -1,4 +1,4 @@
-#include "./public/components/Settings.hpp"
+#include "./public/UI/Component/Settings.hpp"
 
 #include "ftxui/dom/elements.hpp"
 #include "ftxui/component/component.hpp"
@@ -13,7 +13,7 @@ namespace Component {
 
 Settings::Settings()
 {
-    _threadSlider = Slider("", &_threadsSelected, 1, _maxThreadsAvailable, 1);
+    _threadSlider = Slider("", &_threadsSelected, 1, &_maxThreadsAvailable, 1);
     InputOption blenderDirInputOption;
     blenderDirInputOption.on_change = [&] {
         if (_onBlenderDirChange) {
@@ -80,20 +80,21 @@ void Settings::setOnThreadsCountChange(ThreadsCountChangeCallbackT cb, bool invo
 void Settings::setMaxThreadsCount(const int count)
 {
     this->_maxThreadsAvailable = count;
-    auto parent = _threadSlider->Parent();
-    _threadSlider->Detach();
-    _threadSlider = Slider("", &_threadsSelected, 1, _maxThreadsAvailable, 1);
-    parent->Add(_threadSlider);
+    this->_threadsSelected = std::min(this->_threadsSelected, this->_maxThreadsAvailable);
 }
 
 void Settings::setUtilizedThreadsCount(const int count)
 {
     this->_threadsSelected = count;
+    if (_onThreadsCountChange)
+        _onThreadsCountChange(count);
 }
 
 void Settings::setBlenderDir(const std::string& path)
 {
     this->_blenderDirInputStr = path;
+    if (_onBlenderDirChange)
+        _onBlenderDirChange(path);
 }
 
 void Settings::setBlenderDirStatus(const std::string& status)

@@ -23,3 +23,5 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC Network
     PUBLIC System
 )
+
+add_subdirectory(Serializer)

@@ -14,6 +14,7 @@ add_dependencies(${PROJECT_NAME}
     Network
     System
     Model
+    Serializer
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -21,4 +22,5 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Network
     PRIVATE System
     PRIVATE Model
+    PRIVATE Serializer
 )

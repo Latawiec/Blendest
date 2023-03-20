@@ -1,4 +1,4 @@
-#include "./public/views/Main.hpp"
+#include "./public/UI/View/Main.hpp"
 
 #include <ftxui/dom/elements.hpp>                 // for filler, text, hbox, vbox
 #include <ftxui/screen/screen.hpp>                // for Full, Screen

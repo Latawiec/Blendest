@@ -1,15 +1,23 @@
 #pragma once 
 
-#include <components/Connection.hpp>
-#include <BackgroundWebsocket.hpp>
-#include <IListener.hpp>
+#include <UI/Component/Connection.hpp>
+#include <Network/BackgroundWebsocket.hpp>
+#include <Network/IListener.hpp>
 
 
 namespace Model {
 
 class Connection {
+public:
+    struct Data {
+        std::string hostAddress;
+        std::string hostPort;
+    };
+
+private:
     UI::Component::Connection& _view;
     std::optional<Network::BackgroundWebsocket> wsConnectionOpt = std::nullopt;
+
     class WebsocketListener : public Network::IListener {
         UI::Component::Connection& connectionComponent;
     public:
@@ -21,11 +29,14 @@ class Connection {
 
     } _wsListener;
 
+    Data _data;
 
 public:
     Connection(UI::Component::Connection& connectionView);
     ~Connection();
 
+    const Data& getData() const;
+    void setData(Data newData);
 };
 
 }
