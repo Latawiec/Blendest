@@ -12,7 +12,7 @@
 
 namespace Network {
 
-class HandlerPayload {
+class WebsocketPayload {
 
     using ErrorCallbackT = std::function<void(const boost::system::error_code&)>;
     using MessageCallbackT = std::function<void(const boost::beast::flat_buffer&)>;
@@ -39,8 +39,8 @@ class HandlerPayload {
 public:
 
 
-    HandlerPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs);
-    ~HandlerPayload();
+    WebsocketPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs);
+    ~WebsocketPayload();
 
     void Start();
     void Stop();

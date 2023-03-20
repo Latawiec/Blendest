@@ -4,13 +4,13 @@
 #include <optional>
 #include <memory>
 
-#include "HandlerPayload.hpp"
+#include "WebsocketPayload.hpp"
 #include "public/Network/IListener.hpp"
 
 namespace Network {
 
 BackgroundWebsocket::BackgroundWebsocket(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
-: _payloadHandle{ std::make_unique<HandlerPayload>(host, port, reconnectTimeoutMs) }
+: _payloadHandle{ std::make_unique<WebsocketPayload>(host, port, reconnectTimeoutMs) }
 {
     _payloadHandle->OnMessage([&](const boost::beast::flat_buffer& buffer){
         std::lock_guard<std::mutex> lock{ _listenersLock };

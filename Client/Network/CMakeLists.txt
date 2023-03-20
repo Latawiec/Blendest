@@ -4,7 +4,9 @@ project(Network)
 
 add_library(${PROJECT_NAME}
     BackgroundWebsocket.cpp
-    HandlerPayload.cpp
+    WebsocketPayload.cpp
+    HttpSession.cpp
+    HttpSessionPayload.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

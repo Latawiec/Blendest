@@ -3,26 +3,11 @@
 #include <cstddef>
 #include <string>
 
+#include "Error.hpp"
+#include "Buffer.hpp"
+
 namespace Network
 {
-
-    struct Error
-    {
-        int               code = 0;
-        const std::string message;
-        operator bool() const
-        {
-            return code != 0;
-        }
-    };
-
-    struct Buffer
-    {
-        uint8_t          type = 0;
-        const std::byte* data = nullptr;
-        uint64_t         size = 0;
-    };
-
     class IListener
     {
     public:

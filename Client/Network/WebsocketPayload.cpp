@@ -1,41 +1,41 @@
-#include "./HandlerPayload.hpp"
+#include "./WebsocketPayload.hpp"
 
 #include <iostream>
 
 namespace Network {
 
-HandlerPayload::HandlerPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
+WebsocketPayload::WebsocketPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
 : _host(host)
 , _port(port)
 , _tryReconnectTimeout(std::chrono::milliseconds(reconnectTimeoutMs)) 
 {}
 
-HandlerPayload::~HandlerPayload(){
+WebsocketPayload::~WebsocketPayload(){
     Stop();
 }
 
-void HandlerPayload::Start() {
+void WebsocketPayload::Start() {
     boost::asio::post(_ws.get_executor(), [this] {
         _stop_requested = false;
         do_step_machine();
     });
 }
 
-void HandlerPayload::Stop() {
+void WebsocketPayload::Stop() {
     do_stop();
 }
 
-void HandlerPayload::OnError(ErrorCallbackT callback) {
+void WebsocketPayload::OnError(ErrorCallbackT callback) {
     std::lock_guard<std::mutex> lock { _onErrorLock };
     _onError = callback;
 }
 
-void HandlerPayload::OnMessage(MessageCallbackT callback) {
+void WebsocketPayload::OnMessage(MessageCallbackT callback) {
     std::lock_guard lock{ _onMessageLock };
     this->_onMessage = callback;
 }
 
-void HandlerPayload::do_step_machine() {
+void WebsocketPayload::do_step_machine() {
     switch(_status) {
         case Status::INIT:         return do_connect();
         case Status::CONNECTED:    return do_read();
@@ -44,7 +44,7 @@ void HandlerPayload::do_step_machine() {
     };
 }
 
-void HandlerPayload::handle_error(const boost::system::error_code& ec) {
+void WebsocketPayload::handle_error(const boost::system::error_code& ec) {
     //if (_stop_requested) return;
     if (ec.failed())
         _status = _stop_requested ? Status::STOPPED : Status::DISCONNECTED;
@@ -55,7 +55,7 @@ void HandlerPayload::handle_error(const boost::system::error_code& ec) {
     do_step_machine();
 }
 
-void HandlerPayload::handle_message(const boost::beast::flat_buffer& data) {
+void WebsocketPayload::handle_message(const boost::beast::flat_buffer& data) {
     //if (_stop_requested) return;
     std::lock_guard lock{ _onMessageLock };
     _onMessage(_buffer);
@@ -63,7 +63,7 @@ void HandlerPayload::handle_message(const boost::beast::flat_buffer& data) {
     do_step_machine();
 }
 
-void HandlerPayload::do_connect() {
+void WebsocketPayload::do_connect() {
     using tcp = boost::asio::ip::tcp;
     using error_code = boost::system::error_code;
     using namespace boost;
@@ -88,7 +88,7 @@ void HandlerPayload::do_connect() {
     );
 }
 
-void HandlerPayload::do_read() {
+void WebsocketPayload::do_read() {
     using error_code = boost::system::error_code;
     using namespace boost;
     _ws.async_read(_buffer, [this](error_code ec, size_t) {
@@ -102,7 +102,7 @@ void HandlerPayload::do_read() {
     });
 }
 
-void HandlerPayload::do_reconnect_delay(std::chrono::steady_clock::duration d) {
+void WebsocketPayload::do_reconnect_delay(std::chrono::steady_clock::duration d) {
     using error_code = boost::system::error_code;
     _timer.expires_after(d);
     _timer.async_wait([this](error_code ec) {
@@ -112,12 +112,11 @@ void HandlerPayload::do_reconnect_delay(std::chrono::steady_clock::duration d) {
     });
 }
 
-std::future<void> HandlerPayload::do_stop() {
+std::future<void> WebsocketPayload::do_stop() {
     using namespace boost;
     return dispatch(_ws.get_executor(), std::packaged_task<void()>([this] {
                         _stop_requested = true;
                         _ws.next_layer().cancel();
-                        _ws.close(beast::websocket::normal);
                     }));
 }
 

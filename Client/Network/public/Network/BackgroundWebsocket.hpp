@@ -9,13 +9,13 @@
 
 namespace Network
 {
-    class HandlerPayload;
+    class WebsocketPayload;
     class IListener;
 
     class BackgroundWebsocket
     {
     private:
-        std::unique_ptr<HandlerPayload> _payloadHandle;
+        std::unique_ptr<WebsocketPayload> _payloadHandle;
 
         std::mutex _listenersLock;
         std::vector<IListener*> _listeners;

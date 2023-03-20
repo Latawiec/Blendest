@@ -2,6 +2,7 @@
 
 #include <UI/Component/Connection.hpp>
 #include <Network/BackgroundWebsocket.hpp>
+#include <Network/HttpSession.hpp>
 #include <Network/IListener.hpp>
 
 
@@ -17,6 +18,7 @@ public:
 private:
     UI::Component::Connection& _view;
     std::optional<Network::BackgroundWebsocket> wsConnectionOpt = std::nullopt;
+    std::optional<Network::HttpSession> httpSession = std::nullopt;
 
     class WebsocketListener : public Network::IListener {
         UI::Component::Connection& connectionComponent;

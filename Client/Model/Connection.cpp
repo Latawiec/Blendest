@@ -31,10 +31,19 @@ Connection::Connection(UI::Component::Connection& connectionView)
         wsConnectionOpt.value().Listen();
         _data.hostAddress = host;
         _data.hostPort = port;
+
+// EXAMPLE
+        httpSession.emplace(host);
+        httpSession.value().Start();
+        auto fut = httpSession.value().GetFile("/file/someData.json", "./someData.json");
+        fut.wait();
+        auto val = fut.get();
+// EXAMPLE
     };
 
     _view.OnDisconnectClick = [&](const std::string& host, const std::string& port) {
         wsConnectionOpt.reset();
+        httpSession.reset();
     };
 }
 
