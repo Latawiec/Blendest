@@ -25,7 +25,7 @@ void HttpSessionPayload::Start()
 
 void HttpSessionPayload::Stop()
 {
-    do_stop();
+    do_stop().wait();
 }
 
 std::future<Error> HttpSessionPayload::GetFile(const std::string& target, const std::string& outputFilePath)

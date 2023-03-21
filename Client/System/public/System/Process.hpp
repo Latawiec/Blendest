@@ -10,6 +10,12 @@ namespace process {
 }
 }
 
+namespace boost {
+namespace asio {
+    class io_context;
+}
+}
+
 namespace System {
 
 class Process {
@@ -24,6 +30,7 @@ class Process {
     std::future<int> _return;
 
     std::shared_ptr<boost::process::child>  _process;
+    std::shared_ptr<boost::asio::io_context> _ios;
 
 public:
     Process(const std::string& exe, const std::vector<std::string>& args, const std::string& cwd = "");
