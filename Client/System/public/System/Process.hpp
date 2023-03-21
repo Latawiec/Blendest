@@ -30,6 +30,7 @@ public:
     ~Process();
 
     std::future<int>& Start();
+    void Wait();
     std::string ReadStdOut();
     std::string ReadStdErr();
 };

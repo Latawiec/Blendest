@@ -1,5 +1,8 @@
 #include "public/Model/Connection.hpp"
 
+#include "public/Model/BlenderTask.hpp"
+#include "public/Model/TaskRunner.hpp"
+
 namespace Model {
 
 Connection::WebsocketListener::WebsocketListener(UI::Component::Connection& view)
@@ -39,6 +42,20 @@ Connection::Connection(UI::Component::Connection& connectionView)
         fut.wait();
         auto val = fut.get();
 // EXAMPLE
+
+// ANOTHER EXAMPLE, I LIKE THIS PLACE IN CODE
+        BlenderTask task(
+            "C:/Program Files/Blender Foundation/Blender 3.3/blender.exe",
+            "D:/tmp/tmp/Carbuncle.blend",
+            "D:/tmp/tmp/",
+            "fraame_####"
+        );
+
+        TaskRunner runner(task);
+        runner.Start();
+        runner.Listen();
+        runner.Wait();
+// ANOTHER EXAMPLE
     };
 
     _view.OnDisconnectClick = [&](const std::string& host, const std::string& port) {

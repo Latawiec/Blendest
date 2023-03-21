@@ -3,9 +3,11 @@ cmake_minimum_required(VERSION 3.26)
 project(Model)
 
 add_library(${PROJECT_NAME}
+    BlenderTask.cpp
     Connection.cpp
-    Settings.cpp
     Main.cpp
+    Settings.cpp
+    TaskRunner.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

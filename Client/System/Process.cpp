@@ -68,6 +68,11 @@ std::future<int>& Process::Start()
     return this->_return;
 }
 
+void Process::Wait()
+{
+    this->_return.wait();
+}
+
 std::string Process::ReadStdOut()
 {
     std::lock_guard<std::mutex> lock{ _stdOutLock };
