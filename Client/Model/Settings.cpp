@@ -12,7 +12,7 @@ const std::string EmptyPathError = "Empty path";
 const std::string WrongPathError = "Wrong path";
 const std::string NotRespondingError = "Not responding";
 const std::string VersionUnknownError = "Version unknown";
-const std::regex BlenderVersionRegex("(Blender (?:.*))(?:\r\n)|(?:\n)");
+const std::regex BlenderVersionRegex("(Blender (?:\\d\\.\\d\\.\\d+))");
 }
 
 Settings::Settings(UI::Component::Settings& view)

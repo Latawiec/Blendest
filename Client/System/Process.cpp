@@ -49,25 +49,47 @@ std::future<int>& Process::Start()
         // TODO: Fix this. I need to somehow move forward on the stream to not send same lanes again and again.
         const int MaxStdOutLines = 5;
         const int MaxStdErrLines = 50;
-        std::string line;
+        const int ReadBatchSize = 128;
+        std::string line(ReadBatchSize, '\0');
         do {
             {
                 int linesLeft = MaxStdOutLines;
                 std::lock_guard<std::mutex> lock{ _stdOutLock };
-                while(linesLeft-- && (std::getline(stdOut, line))) {
+                while(stdOut.readsome(line.data(), ReadBatchSize) != 0) {
                     _stdOut << line << std::endl;
+                    line.erase();
                 }
             }
             {
                 int linesLeft = MaxStdErrLines;
                 std::lock_guard<std::mutex> lock{ _stdErrLock };
-                while(std::getline(stdErr, line)) {
+                stdErr.sync();
+                while(linesLeft-- && (stdErr.readsome(line.data(), ReadBatchSize))) {
                     _stdErr << line << std::endl;
+                    line.erase();
                 }
             }
         } while(!_process->wait_for(1s));
+        // Flush the IO one last time. Without any limits now. Just get everything out of there.
+        {
+            std::lock_guard<std::mutex> lock{ _stdOutLock };
+            stdOut.sync();
+            while(stdOut.getline(line.data(), ReadBatchSize)) {
+                _stdOut << line << std::endl;
+                line.erase();
+            }
+        }
+        {
+            std::lock_guard<std::mutex> lock{ _stdErrLock };
+            stdErr.sync();
+            while(stdErr.readsome(line.data(), ReadBatchSize)) {
+                _stdErr << line << std::endl;
+                line.erase();
+            }
+        }
 
         if (!_process->running()) {
+            
             return _process->exit_code();
         }
         return 1;
