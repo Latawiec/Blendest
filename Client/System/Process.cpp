@@ -7,6 +7,8 @@
 #include <vector>
 #include <chrono>
 
+#include <iostream>
+
 using namespace std::chrono_literals;
 
 namespace System {
@@ -35,23 +37,29 @@ std::future<int>& Process::Start()
     boost::process::ipstream bpStdErr;
 
     _process = make_shared<boost::process::child>(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
+    boost::process::child(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
     if (!_process->valid()) {
         auto promise = std::promise<int>();
         this->_return = promise.get_future();
         promise.set_value(1);
         return this->_return;
     }
-
+    
     this->_return = std::async([&](boost::process::ipstream stdOut, boost::process::ipstream stdErr) -> int {
+        // TODO: Fix this. I need to somehow move forward on the stream to not send same lanes again and again.
+        const int MaxStdOutLines = 5;
+        const int MaxStdErrLines = 50;
+        std::string line;
         do {
-            std::string line;
             {
+                int linesLeft = MaxStdOutLines;
                 std::lock_guard<std::mutex> lock{ _stdOutLock };
-                while(std::getline(stdOut, line)) {
+                while(linesLeft-- && (std::getline(stdOut, line))) {
                     _stdOut << line << std::endl;
                 }
             }
             {
+                int linesLeft = MaxStdErrLines;
                 std::lock_guard<std::mutex> lock{ _stdErrLock };
                 while(std::getline(stdErr, line)) {
                     _stdErr << line << std::endl;

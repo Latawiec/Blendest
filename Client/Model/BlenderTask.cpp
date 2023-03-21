@@ -4,6 +4,7 @@
 #include <regex>
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 namespace Model {
 
@@ -37,7 +38,15 @@ const std::vector<std::string>& BlenderTask::AssetPaths() const
 
 void BlenderTask::OnProcessOutput(const std::string& stdOut, const std::string& stdErr)
 {
-    const std::regex DoneRegex("(?:Fra:((?:\\d)+) .*$)(?:\\n|\\r\\n)Saved: '(.*)'(?:\\n|\\r\\n) Time: (\\d\\d:\\d\\d.\\d\\d) ");
+    const std::regex FrameDoneRegex("(?:Fra:((?:\\d)+) .*$)(?:\\n|\\r\\n)Saved: '(.*)'(?:\\n|\\r\\n) Time: (\\d\\d:\\d\\d.\\d\\d) ");
+    
+    auto framesDone_begin = std::sregex_iterator(stdOut.begin(), stdOut.end(), FrameDoneRegex);
+    auto framesDone_end = std::sregex_iterator();
+
+    for (auto i = framesDone_begin; i != framesDone_end; ++i) {
+        const std::smatch& matches = *i;
+        std::cout << "Frame done: " << matches[1].str() << " saved as: " << matches[2].str() << " time elapsed: " << matches[3].str() << std::endl;
+    }
 }
 
 void BlenderTask::SetStartFrame(std::optional<int> frame)
