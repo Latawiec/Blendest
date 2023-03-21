@@ -1,5 +1,7 @@
 #include "public/Model/BlenderTask.hpp"
 
+#include <Model/Assets/Assets.hpp>
+
 #include <filesystem>
 #include <regex>
 #include <iomanip>
@@ -38,6 +40,8 @@ const std::vector<std::string>& BlenderTask::AssetPaths() const
 
 void BlenderTask::OnProcessOutput(const std::string& stdOut, const std::string& stdErr)
 {
+    std::cout << stdOut<< std::endl;
+    std::cout << stdErr<< std::endl;
     const std::regex FrameDoneRegex(" Time: (\\d\\d:\\d\\d.\\d\\d) ");
     
     auto framesDone_begin = std::sregex_iterator(stdOut.begin(), stdOut.end(), FrameDoneRegex);
@@ -78,6 +82,7 @@ void BlenderTask::SetClampTimeline(bool clamp)
 namespace /* anonymous */ {
 namespace BlenderArgs {
 static const std::string NoUI = "-b";
+static const std::string RunScript = "-P";
 static const std::string AddFileExtension = "-x";
 static const std::string RenderOutput = "--render-output";
 static const std::string RenderTimeline = "--render-anim";
@@ -92,13 +97,14 @@ void BlenderTask::updateCommand()
     std::stringstream ssCommand;
     ssCommand << std::quoted(_blenderExePath) << " "
         << BlenderArgs::NoUI << " "
-        << BlenderArgs::AddFileExtension << " 1 "
         << std::quoted(_blendFilePath) << " "
+        << BlenderArgs::AddFileExtension << " 1 "
         << BlenderArgs::RenderOutput << " " << std::quoted((std::filesystem::path(_outputPath) / _outputFormat).string()) << " "
         << (_threadsCount ? (BlenderArgs::ThreadsCount + " " + std::to_string(_threadsCount.value())) : "") << " "
         << (_clampToTimeline ? BlenderArgs::RenderTimeline : "") + " "
         << (_startFrame ? (BlenderArgs::StartFrame + " " + std::to_string(_startFrame.value())) : "") << " "
         << (_endFrame ? (BlenderArgs::EndFrame + " " + std::to_string(_endFrame.value())) : "") << " "
+        << BlenderArgs::RunScript << " " << std::quoted(Model::Assets::BlenderFileInfoScriptPath) << " "
         ;
 
     _command = ssCommand.str();

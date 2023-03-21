@@ -18,12 +18,15 @@ add_dependencies(${PROJECT_NAME}
     UI
     Network
     System
+    Assets
 )
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC UI
     PUBLIC Network
     PUBLIC System
+    PRIVATE Assets
 )
 
 add_subdirectory(Serializer)
+add_subdirectory(Assets)

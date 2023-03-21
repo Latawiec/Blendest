@@ -54,6 +54,7 @@ Connection::Connection(UI::Component::Connection& connectionView)
         TaskRunner runner(task);
         runner.Start();
         runner.Listen();
+        runner.Wait();
 // ANOTHER EXAMPLE
     };
 

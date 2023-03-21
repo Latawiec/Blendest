@@ -24,7 +24,7 @@ void read_loop(std::stringstream& output, boost::process::async_pipe& input, std
         input, buffer, '\n',
         [&](boost::system::error_code ec, size_t /*bytes*/) {
             if (ec) {
-                // std::cerr << "Loop exit (" << ec.message() << ")" << std::endl;
+                std::cerr << "Loop exit (" << ec.message() << ")" << std::endl;
                 return;
             }
             if (getline(std::istream(&buffer), line)) {
