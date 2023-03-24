@@ -3,6 +3,11 @@
 #include "public/Model/BlenderTask.hpp"
 #include "public/Model/TaskRunner.hpp"
 
+#include <chrono>
+#include <string>
+#include <iostream>
+using namespace std::chrono_literals;
+
 namespace Model {
 
 Connection::WebsocketListener::WebsocketListener(UI::Component::Connection& view)
@@ -21,6 +26,7 @@ void Connection::WebsocketListener::OnError(const Network::Error& error)
 void Connection::WebsocketListener::OnMessage(const Network::Buffer& data)
 {
     connectionComponent.SetConnectionStatus(UI::Component::Connection::Status::CONNECTED);
+    std::cout << reinterpret_cast<const char*>(data.data) << std::endl;
 }
 
 
@@ -35,26 +41,31 @@ Connection::Connection(UI::Component::Connection& connectionView)
         _data.hostAddress = host;
         _data.hostPort = port;
 
-// EXAMPLE
-        httpSession.emplace(host);
-        httpSession.value().Start();
-        auto fut = httpSession.value().GetFile("/file/someData.json", "./someData.json");
-        fut.wait();
-        auto val = fut.get();
-// EXAMPLE
+        for (int i=0; i < 100; ++i) {
+            wsConnectionOpt.value().Write(std::string("Value is: ") + std::to_string(i));
+            std::this_thread::sleep_for(1s);
+        }
 
-// ANOTHER EXAMPLE, I LIKE THIS PLACE IN CODE
-        BlenderTask task(
-            "C:/Program Files/Blender Foundation/Blender 3.3/blender.exe",
-            "D:/tmp/tmp/Carbuncle.blend",
-            "D:/tmp/tmp/",
-            "fraame_####"
-        );
+// EXAMPLE
+//         httpSession.emplace(host);
+//         httpSession.value().Start();
+//         auto fut = httpSession.value().GetFile("/file/someData.json", "./someData.json");
+//         fut.wait();
+//         auto val = fut.get();
+// // EXAMPLE
 
-        TaskRunner runner(task);
-        runner.Start();
-        runner.Listen();
-        runner.Wait();
+// // ANOTHER EXAMPLE, I LIKE THIS PLACE IN CODE
+//         BlenderTask task(
+//             "C:/Program Files/Blender Foundation/Blender 3.3/blender.exe",
+//             "D:/tmp/tmp/Carbuncle.blend",
+//             "D:/tmp/tmp/",
+//             "fraame_####"
+//         );
+
+//         TaskRunner runner(task);
+//         runner.Start();
+//         runner.Listen();
+//         runner.Wait();
 // ANOTHER EXAMPLE
     };
 

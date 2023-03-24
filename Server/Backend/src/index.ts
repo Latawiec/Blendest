@@ -27,5 +27,11 @@ ws.on('close', function close(code, reason) {
 
 ws.send('something');
 ws.send('something else');
+
+let i = 0;
+setInterval(() => {
+  ws.send(`Hi: ${i}`);
+  i++;
+}, 1000)
 });
 

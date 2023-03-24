@@ -26,6 +26,8 @@ namespace Network
 
         void Listen();
 
+        void Write(const std::string& text);
+
         void RegisterListener(IListener*listener);
         void UnregisterListener(IListener*listener);
     };

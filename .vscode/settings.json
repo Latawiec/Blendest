@@ -2,6 +2,9 @@
     "cmake.sourceDirectory": "${workspaceFolder}/Client",
     "cmake.buildDirectory": "${workspaceFolder}/Client/build",
     "cmake.generator": "Visual Studio 17 2022",
+    "cmake.configureSettings": {
+        "CMAKE_BUILD_TYPE": "${buildType}"
+    },
     "files.associations": {
         "array": "cpp",
         "atomic": "cpp",

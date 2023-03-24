@@ -1,4 +1,4 @@
-#include "./public/Network/BackgroundWebsocket.hpp"
+#include "./public/Network/Websocket.hpp"
 
 #include <boost/asio/use_future.hpp>
 #include <optional>
@@ -47,6 +47,10 @@ BackgroundWebsocket::~BackgroundWebsocket()
 
 void BackgroundWebsocket::Listen() {
     _payloadHandle->Start();
+}
+
+void BackgroundWebsocket::Write(const std::string& text) {
+    _payloadHandle->Write(text);
 }
 
 void BackgroundWebsocket::RegisterListener(IListener* listener)

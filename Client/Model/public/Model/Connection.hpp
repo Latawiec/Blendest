@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <UI/Component/Connection.hpp>
-#include <Network/BackgroundWebsocket.hpp>
+#include <Network/Websocket.hpp>
 #include <Network/HttpSession.hpp>
 #include <Network/IListener.hpp>
 

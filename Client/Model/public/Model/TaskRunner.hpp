@@ -4,6 +4,7 @@
 #include <System/Process.hpp>
 
 #include <future>
+#include <optional>
 
 namespace Model {
 

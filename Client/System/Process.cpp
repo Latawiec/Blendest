@@ -65,7 +65,7 @@ std::future<int>& Process::Start()
     boost::process::async_pipe bpStdOut(*_ios);
     boost::process::async_pipe bpStdErr(*_ios);
     try {
-        _process = make_shared<boost::process::child>(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
+        _process = std::make_shared<boost::process::child>(commandLineBuild.str(), boost::process::std_out > bpStdOut, boost::process::std_err > bpStdErr);
     } catch (...) {
         auto promise = std::promise<int>();
         this->_return = promise.get_future();
