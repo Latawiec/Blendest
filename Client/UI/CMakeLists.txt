@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(UI
-    LANGUAGES CXX
-    VERSION 1.0.0
-)
+project(UI)
 
 add_library(${PROJECT_NAME}
     Connection.cpp
@@ -13,10 +10,6 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     INTERFACE public
-)
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 20
 )
 
 target_link_libraries(${PROJECT_NAME}
