@@ -25,6 +25,8 @@ void WebsocketPayload::Start() {
 
 void WebsocketPayload::Stop() {
     do_stop();
+    // We need to make sure everything is done, otherwise we might sweep resources from a running thread.
+    _mainFinishedPromise.get_future().get();
 }
 
 void WebsocketPayload::Write(const std::string& text) {
@@ -32,53 +34,61 @@ void WebsocketPayload::Write(const std::string& text) {
     _writeQueue.push_back(text);
 }
 
-void WebsocketPayload::OnError(ErrorCallbackT callback) {
-    std::lock_guard<std::mutex> lock { _onErrorLock };
-    _onError = callback;
+nod::connection WebsocketPayload::OnError(ErrorCallbackT&& cb) {
+    return _onErrorSignal.connect(std::move(cb));
+}
+nod::connection WebsocketPayload::OnMessage(MessageCallbackT&& cb) {
+    return _onMessageSignal.connect(std::move(cb));
 }
 
-void WebsocketPayload::OnMessage(MessageCallbackT callback) {
-    std::lock_guard lock{ _onMessageLock };
-    this->_onMessage = callback;
+nod::connection WebsocketPayload::OnStatus(StatusCallbackT&& cb) {
+    return _onStatusSignal.connect(std::move(cb));
 }
 
 void WebsocketPayload::do_main_thread() {
+    _mainFinishedPromise = std::promise<void>{};
     while (!_stop_requested) {
         switch(_status) {
-            case Status::INIT:         do_connect();         break;
-            case Status::CONNECTED:    do_write();           break;
-            case Status::DISCONNECTED: do_reconnect_delay(); break;
-            case Status::STOPPED:      return;
+            case WebsocketStatus::INIT:         do_connect();         break;
+            case WebsocketStatus::CONNECTED:    do_write();           break;
+            case WebsocketStatus::DISCONNECTED: do_reconnect_delay(); break;
+            case WebsocketStatus::STOPPED:      break;
         };
     }
+
+    if (_is_reader_started) {
+        _readerFinishedPromise.get_future().get();
+        _is_reader_started = false;
+    }
+    _mainFinishedPromise.set_value();
 }
 
 void WebsocketPayload::do_reader_thread() {
-    while (!_stop_requested && _status == Status::CONNECTED) {
+    while (!_stop_requested && _status == WebsocketStatus::CONNECTED) {
             do_read();
     }
 }
 
 void WebsocketPayload::handle_error(const system::error_code& ec) {
+    std::lock_guard<std::mutex> lock { _errorLock };
     if (ec.failed()) {
-        _status = _stop_requested ? Status::STOPPED : Status::DISCONNECTED;
+        set_status(_stop_requested ? WebsocketStatus::STOPPED : WebsocketStatus::DISCONNECTED);
     }
 
     if (_stop_requested){
         return;
     }
-
-    {
-        std::lock_guard<std::mutex> lock { _onErrorLock };
-        _onError(ec);
-    }
+    _onErrorSignal(ec);
 }
 
 void WebsocketPayload::handle_message(const beast::flat_buffer& data) {
-    //if (_stop_requested) return;
-    std::lock_guard lock{ _onMessageLock };
-    _onMessage(_readBuffer);
+    _onMessageSignal(data);
     _readBuffer.clear();
+}
+
+void WebsocketPayload::set_status(const WebsocketStatus& status) {
+    _status = status;
+    _onStatusSignal(status);
 }
 
 void WebsocketPayload::do_connect() {
@@ -93,7 +103,7 @@ void WebsocketPayload::do_connect() {
                             BOOST_BEAST_VERSION_STRING " WsConnect");
                 }));
         _ws.handshake(_host + ':' + _port, "/");
-        _status = Status::CONNECTED;
+        set_status(WebsocketStatus::CONNECTED);
         _readBuffer.clear();
 
     } catch (system::system_error ec) {
@@ -101,9 +111,12 @@ void WebsocketPayload::do_connect() {
         return;
     }
 
+    _is_reader_started = true;
     asio::post(_ws.get_executor(), [this] {
+        _readerFinishedPromise = std::promise<void>{};
         // Reader thread live.
         do_reader_thread();
+        _readerFinishedPromise.set_value();
     });
 }
 
@@ -150,9 +163,16 @@ void WebsocketPayload::do_write() {
 }
 
 void WebsocketPayload::do_reconnect_delay() {
+    const auto entryTimestamp = std::chrono::steady_clock::now();
 
-    std::this_thread::sleep_for(_tryReconnectTimeout);
-    _status = Status::INIT;
+    // Wait for reader to close up. We don't want to accidentaly post more than 1 reader.
+    if (_is_reader_started) {
+        _readerFinishedPromise.get_future().get();
+        _is_reader_started = false;
+    }
+
+    std::this_thread::sleep_until(entryTimestamp + _tryReconnectTimeout);
+    set_status(WebsocketStatus::INIT);
 }
 
 void WebsocketPayload::do_writing_delay() {
@@ -161,8 +181,10 @@ void WebsocketPayload::do_writing_delay() {
 }
 
 void WebsocketPayload::do_stop() {
-    if (!_stop_requested)
+    if (!_stop_requested) {
+        _stop_requested = true;
         _ws.next_layer().cancel();
+    }
 }
 
 }

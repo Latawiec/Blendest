@@ -5,64 +5,48 @@
 #include <memory>
 
 #include "WebsocketPayload.hpp"
-#include "public/Network/IListener.hpp"
 
 namespace Network {
 
-BackgroundWebsocket::BackgroundWebsocket(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
+Websocket::Websocket(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs)
 : _payloadHandle{ std::make_unique<WebsocketPayload>(host, port, reconnectTimeoutMs) }
-{
-    _payloadHandle->OnMessage([&](const boost::beast::flat_buffer& buffer){
-        std::lock_guard<std::mutex> lock{ _listenersLock };
-        for(auto& listener : _listeners) {
-            listener->OnMessage({
-                .type = 0,
-                .data = static_cast<const std::byte*>(buffer.data().data()),
-                .size = buffer.size()
-            });
-        }
-    });
+{}
 
-    _payloadHandle->OnError([&](const boost::system::error_code& error){
-        std::lock_guard<std::mutex> lock{ _listenersLock };
-        for(auto& listener : _listeners) {
-            listener->OnError({
-                .code = error.value(),
-                .message = error.what()
-            });
-        }
-    });
-}
+Websocket::~Websocket() 
+{}
 
-BackgroundWebsocket::~BackgroundWebsocket() 
-{
-    _payloadHandle->OnError([](const auto& e){});
-    _payloadHandle->OnMessage([](const auto& e){});
-    _payloadHandle->Stop();
-
-    for(auto& listener : _listeners) {
-        listener->OnDestroy();
-    }
-}
-
-void BackgroundWebsocket::Listen() {
+void Websocket::Listen() {
     _payloadHandle->Start();
 }
 
-void BackgroundWebsocket::Write(const std::string& text) {
+void Websocket::Write(const std::string& text) {
     _payloadHandle->Write(text);
 }
 
-void BackgroundWebsocket::RegisterListener(IListener* listener)
-{
-    std::lock_guard<std::mutex> lock{ _listenersLock };
-    _listeners.push_back(listener);
-};
+nod::connection Websocket::OnError(OnErrorCallbackT&& cb) {
+    return _payloadHandle->OnError([cb = std::move(cb)] (const boost::system::error_code& error_code) {
+        Error e = {
+            .code = error_code.value(),
+            .message = error_code.message()
+        };
+        cb(e);
+    });
+}
 
-void BackgroundWebsocket::UnregisterListener(IListener* listener)
-{
-    std::lock_guard<std::mutex> lock{ _listenersLock };
-    _listeners.erase(std::remove(_listeners.begin(), _listeners.end(), listener), _listeners.end());
-};
+nod::connection Websocket::OnMessage(OnMessageCallbackT&& cb) {
+    return _payloadHandle->OnMessage([cb = std::move(cb)] (const boost::beast::flat_buffer& buffer) {
+        Buffer m = {
+            .type = 0, 
+            .data = reinterpret_cast<const std::byte*>(buffer.data().data()),
+            .size = buffer.data().size()
+        };
+        cb(m);
+    });
+}
+
+nod::connection Websocket::OnStatus(OnStatusCallbackT&& cb) {
+    return _payloadHandle->OnStatus(std::move(cb));
+}
+
 
 }

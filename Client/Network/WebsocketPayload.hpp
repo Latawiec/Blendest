@@ -1,5 +1,7 @@
 #pragma once
 
+#include "public/Network/WebsocketStatus.hpp"
+
 #include <string>
 #include <chrono>
 #include <mutex>
@@ -18,18 +20,6 @@ using namespace std::chrono_literals;
 namespace Network {
 
 class WebsocketPayload {
-
-    using ErrorCallbackT = std::function<void(const boost::system::error_code&)>;
-    using MessageCallbackT = std::function<void(const boost::beast::flat_buffer&)>;
-    
-    std::mutex _onErrorLock; // Do not change callback when I'm calling it
-    ErrorCallbackT _onError; // Do not change callback when I'm calling it
-
-    std::mutex _onMessageLock;
-    MessageCallbackT _onMessage;
-
-    // Declare Boost stuff as last, its important for destruction order... unfortunately.
-
     const std::string               _host, _port;
 
     boost::beast::flat_buffer      _readBuffer;
@@ -47,11 +37,20 @@ class WebsocketPayload {
     std::chrono::time_point<std::chrono::steady_clock> _lastWriteTimepoint;
 
     bool _stop_requested = false;
-    enum class Status { INIT, CONNECTED, DISCONNECTED, STOPPED } _status{};
+    bool _is_reader_started = false;
+    std::promise<void> _readerFinishedPromise;
+    std::promise<void> _mainFinishedPromise;
+    WebsocketStatus _status{};
+
+    using ErrorCallbackSignature = void(const boost::system::error_code&);
+    using MessageCallbackSignature = void(const boost::beast::flat_buffer&);
+    using StatusCallbackSignature = void(const WebsocketStatus&);
+
+    nod::signal<ErrorCallbackSignature>   _onErrorSignal;
+    nod::signal<MessageCallbackSignature> _onMessageSignal;
+    nod::signal<StatusCallbackSignature>  _onStatusSignal;
 
 public:
-
-
     WebsocketPayload(const std::string& host, const std::string& port, uint64_t reconnectTimeoutMs);
     ~WebsocketPayload();
 
@@ -60,8 +59,13 @@ public:
 
     void Write(const std::string& text);
     
-    void OnError(ErrorCallbackT callback);
-    void OnMessage(MessageCallbackT callback);
+    using ErrorCallbackT = decltype(_onErrorSignal)::slot_type;
+    using MessageCallbackT = decltype(_onMessageSignal)::slot_type;
+    using StatusCallbackT = decltype(_onStatusSignal)::slot_type;
+
+    nod::connection OnError(ErrorCallbackT&&);
+    nod::connection OnMessage(MessageCallbackT&&);
+    nod::connection OnStatus(StatusCallbackT&&);
 
 private:
     void do_main_thread();
@@ -69,6 +73,7 @@ private:
     
     void handle_error(const boost::system::error_code& ec);
     void handle_message(const boost::beast::flat_buffer& data);
+    void set_status(const WebsocketStatus& newStatus);
 
     void do_connect();
     void do_read();

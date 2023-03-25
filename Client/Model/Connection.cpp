@@ -10,40 +10,28 @@ using namespace std::chrono_literals;
 
 namespace Model {
 
-Connection::WebsocketListener::WebsocketListener(UI::Component::Connection& view)
-: connectionComponent(view)
-{}
-
-Connection::WebsocketListener::~WebsocketListener()
-{}
-
-
-void Connection::WebsocketListener::OnError(const Network::Error& error)
-{
-    connectionComponent.SetConnectionStatus(UI::Component::Connection::Status::RECONNECTING);
-}
-
-void Connection::WebsocketListener::OnMessage(const Network::Buffer& data)
-{
-    connectionComponent.SetConnectionStatus(UI::Component::Connection::Status::CONNECTED);
-    std::cout << reinterpret_cast<const char*>(data.data) << std::endl;
-}
-
-
 Connection::Connection(UI::Component::Connection& connectionView)
 : _view(connectionView)
-, _wsListener(_view)
 {
     _view.OnConnectClick = [&](const std::string& host, const std::string& port) {
         wsConnectionOpt.emplace(host, port);
-        wsConnectionOpt.value().RegisterListener(&_wsListener);
+        _onErrorConnection = wsConnectionOpt.value().OnError([&](const Network::Error& e){
+            std::cout << e.message << std::endl;
+        });
+        _onMessageConnection = wsConnectionOpt.value().OnMessage([&](const Network::Buffer& b){
+            std::cout << std::string(reinterpret_cast<const char*>(b.data), b.size) << std::endl;
+        });
+        _onStatusConnection = wsConnectionOpt.value().OnStatus([&](const Network::WebsocketStatus& s) {
+            _view.SetConnectionStatus(s == Network::WebsocketStatus::CONNECTED ? UI::Component::Connection::Status::CONNECTED : UI::Component::Connection::Status::RECONNECTING);
+        });
+
         wsConnectionOpt.value().Listen();
         _data.hostAddress = host;
         _data.hostPort = port;
 
         for (int i=0; i < 100; ++i) {
             wsConnectionOpt.value().Write(std::string("Value is: ") + std::to_string(i));
-            std::this_thread::sleep_for(1s);
+            // std::this_thread::sleep_for(1s);
         }
 
 // EXAMPLE

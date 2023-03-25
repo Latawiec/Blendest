@@ -3,8 +3,8 @@
 #include <UI/Component/Connection.hpp>
 #include <Network/Websocket.hpp>
 #include <Network/HttpSession.hpp>
-#include <Network/IListener.hpp>
 
+#include <nod.hpp>
 
 namespace Model {
 
@@ -17,19 +17,13 @@ public:
 
 private:
     UI::Component::Connection& _view;
-    std::optional<Network::BackgroundWebsocket> wsConnectionOpt = std::nullopt;
+    std::optional<Network::Websocket> wsConnectionOpt = std::nullopt;
     std::optional<Network::HttpSession> httpSession = std::nullopt;
 
-    class WebsocketListener : public Network::IListener {
-        UI::Component::Connection& connectionComponent;
-    public:
-        WebsocketListener(UI::Component::Connection& view);
-        virtual ~WebsocketListener();
+    nod::connection _onErrorConnection;
+    nod::connection _onMessageConnection;
+    nod::connection _onStatusConnection;
 
-        void OnError(const Network::Error& error) override;
-        void OnMessage(const Network::Buffer& data) override;
-
-    } _wsListener;
 
     Data _data;
 

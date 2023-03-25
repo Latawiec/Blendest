@@ -1,35 +1,42 @@
 #pragma once
 
+#include "WebsocketStatus.hpp"
+#include "Error.hpp"
+#include "Buffer.hpp"
+
 #include <string>
 #include <chrono>
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <functional>
 #include <algorithm>
+
+#include <nod.hpp>
 
 namespace Network
 {
     class WebsocketPayload;
-    class IListener;
 
-    class BackgroundWebsocket
+    class Websocket
     {
     private:
         std::unique_ptr<WebsocketPayload> _payloadHandle;
 
-        std::mutex _listenersLock;
-        std::vector<IListener*> _listeners;
-
     public:
-        BackgroundWebsocket(const std::string &host, const std::string &port, uint64_t reconnectTimeoutMs = 1000);
-        ~BackgroundWebsocket();
+        Websocket(const std::string &host, const std::string &port, uint64_t reconnectTimeoutMs = 1000);
+        ~Websocket();
 
         void Listen();
-
         void Write(const std::string& text);
 
-        void RegisterListener(IListener*listener);
-        void UnregisterListener(IListener*listener);
+        using OnErrorCallbackT   = std::function<void(const Error&)>;
+        using OnMessageCallbackT = std::function<void(const Buffer&)>;
+        using OnStatusCallbackT  = std::function<void(const WebsocketStatus&)>;
+
+        nod::connection OnError(OnErrorCallbackT&&);
+        nod::connection OnMessage(OnMessageCallbackT&&);
+        nod::connection OnStatus(OnStatusCallbackT&&);
     };
 
 } // namespace Network
