@@ -1,8 +1,8 @@
 
-#include <App/App.hpp>
+#include <ViewModel/App.hpp>
 
 int main(int argc, const char* argv[]) {
-  App app;
+  ViewModel::App app;
   app.Run();
   return 0;
 }

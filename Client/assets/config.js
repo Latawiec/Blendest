@@ -1,1 +1,0 @@
-{"connection":{"hostAddress":"127.0.0.1","hostPort":"8080"},"settings":{"blenderPath":"C:\\Program Files\\Blender Foundation\\Blender 3.3","threadCount":24}}

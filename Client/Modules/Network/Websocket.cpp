@@ -15,8 +15,24 @@ Websocket::Websocket(const std::string& host, const std::string& port, uint64_t 
 Websocket::~Websocket() 
 {}
 
-void Websocket::Listen() {
+Websocket::Websocket(Websocket&& other) 
+{
+    std::swap(_payloadHandle, other._payloadHandle);
+}
+
+Websocket& Websocket::operator=(Websocket&& other) 
+{
+    std::swap(_payloadHandle, other._payloadHandle);
+    return *this;
+}
+
+
+void Websocket::Start() {
     _payloadHandle->Start();
+}
+
+void Websocket::Stop() {
+    _payloadHandle->Stop();
 }
 
 void Websocket::Write(const std::string& text) {

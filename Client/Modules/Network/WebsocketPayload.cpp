@@ -17,6 +17,7 @@ WebsocketPayload::~WebsocketPayload(){
 }
 
 void WebsocketPayload::Start() {
+    _is_started = true;
     asio::post(_ws.get_executor(), [this] {
         _stop_requested = false;
         do_main_thread();
@@ -24,9 +25,12 @@ void WebsocketPayload::Start() {
 }
 
 void WebsocketPayload::Stop() {
-    do_stop();
-    // We need to make sure everything is done, otherwise we might sweep resources from a running thread.
-    _mainFinishedPromise.get_future().get();
+    if (_is_started) {
+        _is_started = false;
+        do_stop();
+        // We need to make sure everything is done, otherwise we might sweep resources from a running thread.
+        _mainFinishedPromise.get_future().get();
+    }
 }
 
 void WebsocketPayload::Write(const std::string& text) {

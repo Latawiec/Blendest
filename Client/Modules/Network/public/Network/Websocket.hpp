@@ -27,7 +27,11 @@ namespace Network
         Websocket(const std::string &host, const std::string &port, uint64_t reconnectTimeoutMs = 1000);
         ~Websocket();
 
-        void Listen();
+        Websocket(Websocket&&);
+        Websocket& operator=(Websocket&&);
+
+        void Start();
+        void Stop();
         void Write(const std::string& text);
 
         using OnErrorCallbackT   = std::function<void(const Error&)>;

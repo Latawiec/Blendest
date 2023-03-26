@@ -36,6 +36,7 @@ class WebsocketPayload {
     std::chrono::milliseconds _writeDelay = 100ms;
     std::chrono::time_point<std::chrono::steady_clock> _lastWriteTimepoint;
 
+    bool _is_started = false;
     bool _stop_requested = false;
     bool _is_reader_started = false;
     std::promise<void> _readerFinishedPromise;

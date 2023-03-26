@@ -15,9 +15,25 @@ HttpSession::~HttpSession()
     _payloadHandle->Stop();
 }
 
+HttpSession::HttpSession(HttpSession&& other)
+{
+    std::swap(_payloadHandle, other._payloadHandle);
+}
+
+HttpSession& HttpSession::operator=(HttpSession&& other)
+{
+    std::swap(_payloadHandle, other._payloadHandle);
+    return *this;
+}
+
 void HttpSession::Start() 
 {
     _payloadHandle->Start();
+}
+
+void HttpSession::Stop()
+{
+    _payloadHandle->Stop();
 }
 
 std::future<Error> HttpSession::GetFile(const std::string& target, const std::string& outputFilePath)

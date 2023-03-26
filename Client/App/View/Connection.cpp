@@ -1,4 +1,4 @@
-#include "public/Component/Connection.hpp"
+#include "public/View/Component/Connection.hpp"
 
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/component/component.hpp>
@@ -40,7 +40,12 @@ Connection::Connection()
 
 ftxui::Component Connection::GetComponent()
 {
-    return _component;
+    return Renderer(_component, [&] {
+        return window(
+            text("Connection") | hcenter | bold,
+            _component->Render()
+        ) | size(WIDTH, GREATER_THAN, 40);
+    });
 }
 
 void Connection::SetStatus(Status s)
@@ -70,7 +75,7 @@ nod::connection Connection::OnConnect(ConnectCallbackT&& cb)
     return _connectSignal.connect(std::move(cb));
 }
 
-nod::connection Connection::OnDisconect(DisconnectCallbackT&& cb)
+nod::connection Connection::OnDisconnect(DisconnectCallbackT&& cb)
 {
     return _disconnectSignal.connect(std::move(cb));
 }

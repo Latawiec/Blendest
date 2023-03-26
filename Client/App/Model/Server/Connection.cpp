@@ -1,5 +1,6 @@
-#include "public/Connection.hpp"
+#include "public/Model/Server/Connection.hpp"
 
+namespace Model {
 namespace Server {
 
 Connection::Connection(std::string host, std::string port)
@@ -32,6 +33,16 @@ void Connection::Stop()
     _http.Stop();
 }
 
+const std::string& Connection::GetHost() const
+{
+    return _hostAddress;
+}
+
+const std::string& Connection::GetPort() const
+{
+    return _hostPort;   
+}
+
 Network::Websocket& Connection::Websocket()
 {
     return _websocket;
@@ -44,3 +55,4 @@ Network::HttpSession& Connection::Http()
 
 
 } // namespace Server
+} // namespace Model

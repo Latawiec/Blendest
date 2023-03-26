@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(dependencies.cmake)
+include (functions.cmake)
 
 project(BlendestClient
     LANGUAGES CXX
@@ -16,11 +17,11 @@ add_executable(${PROJECT_NAME}
 )
 
 add_dependencies(${PROJECT_NAME}
-    App
+    ViewModel
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE App
+    PRIVATE ViewModel
 )
 
 add_subdirectory(Modules)
