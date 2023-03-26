@@ -8,7 +8,7 @@
 namespace Network {
 
 class HttpSessionPayload {
-    const std::string              _host;
+    const std::string              _host, _port;
     boost::asio::thread_pool       _ioc{1};
     boost::beast::tcp_stream       _stream{_ioc};
     boost::beast::flat_buffer      _buffer;
@@ -16,7 +16,7 @@ class HttpSessionPayload {
     bool _stop_requested = false;
 
 public:
-    HttpSessionPayload(const std::string& host);
+    HttpSessionPayload(const std::string& host, const std::string& port);
     ~HttpSessionPayload();
 
     void Start();

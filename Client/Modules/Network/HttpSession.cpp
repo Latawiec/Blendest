@@ -4,8 +4,8 @@
 
 namespace Network {
 
-HttpSession::HttpSession(const std::string& host)
-: _payloadHandle{ std::make_unique<HttpSessionPayload>(host) }
+HttpSession::HttpSession(const std::string& host, const std::string& port)
+: _payloadHandle{ std::make_unique<HttpSessionPayload>(host, port) }
 {
     
 }

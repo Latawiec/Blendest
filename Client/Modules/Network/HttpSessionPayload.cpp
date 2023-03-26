@@ -6,8 +6,9 @@
 
 namespace Network {
 
-HttpSessionPayload::HttpSessionPayload(const std::string& host)
+HttpSessionPayload::HttpSessionPayload(const std::string& host, const std::string& port)
 : _host(host)
+, _port(port)
 {}
 
 HttpSessionPayload::~HttpSessionPayload()
@@ -39,7 +40,7 @@ void HttpSessionPayload::do_connect()
     using error_code = boost::system::error_code;
     using namespace boost;
 
-    _stream.async_connect(tcp::resolver(_ioc).resolve(_host, "8080"),
+    _stream.async_connect(tcp::resolver(_ioc).resolve(_host, _port),
         [this](error_code ec, tcp::endpoint /*ep*/) {
             if (ec) {
                 const std::string err = ec.message();

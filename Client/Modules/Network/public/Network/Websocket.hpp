@@ -34,9 +34,9 @@ namespace Network
         using OnMessageCallbackT = std::function<void(const Buffer&)>;
         using OnStatusCallbackT  = std::function<void(const WebsocketStatus&)>;
 
-        nod::connection OnError(OnErrorCallbackT&&);
-        nod::connection OnMessage(OnMessageCallbackT&&);
-        nod::connection OnStatus(OnStatusCallbackT&&);
+        [[nodiscard]] nod::connection OnError(OnErrorCallbackT&&);
+        [[nodiscard]] nod::connection OnMessage(OnMessageCallbackT&&);
+        [[nodiscard]] nod::connection OnStatus(OnStatusCallbackT&&);
     };
 
 } // namespace Network

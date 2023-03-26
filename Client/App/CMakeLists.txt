@@ -24,3 +24,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Model
     PRIVATE Serializer
 )
+
+add_subdirectory(Model)
+add_subdirectory(View)
+add_subdirectory(ViewModel)

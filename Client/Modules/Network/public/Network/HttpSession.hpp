@@ -17,7 +17,7 @@ class HttpSession {
     std::unique_ptr<HttpSessionPayload> _payloadHandle;
 
 public:
-    HttpSession(const std::string& host);
+    HttpSession(const std::string& host, const std::string& port);
     ~HttpSession();
 
     void Start();
