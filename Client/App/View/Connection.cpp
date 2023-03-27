@@ -70,6 +70,16 @@ void Connection::SetPort(const std::string& port)
     _portInputStr = port;
 }
 
+const std::string& Connection::GetHost() const
+{
+    return _host;
+}
+
+const std::string& Connection::GetPort() const
+{
+    return _port;
+}
+
 nod::connection Connection::OnConnect(ConnectCallbackT&& cb)
 {
     return _connectSignal.connect(std::move(cb));

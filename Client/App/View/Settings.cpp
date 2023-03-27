@@ -48,6 +48,11 @@ void Settings::SetThreadsSelected(int threads)
     threadsSelectChanged();
 }
 
+int Settings::GetThreadsSelected() const
+{
+    return _threadsSelected;
+}
+
 void Settings::SetBlenderDir(const std::string& blenderDir)
 {
     _blenderDirInputStr = blenderDir;
@@ -57,6 +62,11 @@ void Settings::SetBlenderDir(const std::string& blenderDir)
 void Settings::SetBlenderDirStatus(const std::string& status)
 {
     _blenderDirStatusStr = status;
+}
+
+const std::string& Settings::GetBlenderDir() const 
+{
+    return _blenderDirInputStr;
 }
 
 nod::connection Settings::OnThreadsChanged(ThreadsSettingCallbackT&& cb)

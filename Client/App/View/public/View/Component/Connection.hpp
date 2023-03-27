@@ -56,6 +56,9 @@ public:
     void SetHost(const std::string& host);
     void SetPort(const std::string& port);
 
+    const std::string& GetHost() const;
+    const std::string& GetPort() const;
+
     using ConnectCallbackT = decltype(_connectSignal)::slot_type;
     using DisconnectCallbackT = decltype(_disconnectSignal)::slot_type;
 

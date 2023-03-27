@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(Model.Main)
+project(ViewModel.Serializer)
+
 
 add_library(${PROJECT_NAME}
-    Main.cpp
+    Serializer.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -11,13 +12,12 @@ target_include_directories(${PROJECT_NAME}
 )
 
 add_dependencies(${PROJECT_NAME}
-    Model.Server
-    Model.Blender
+    View
     Model.Files
 )
- 
+
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC Model.Server
-    PUBLIC Model.Blender
+    PRIVATE nlohmann_json
     PUBLIC Model.Files
+    PUBLIC View
 )

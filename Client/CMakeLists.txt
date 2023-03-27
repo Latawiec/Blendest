@@ -25,6 +25,4 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_subdirectory(Modules)
-add_subdirectory(UI)
-add_subdirectory(Model)
 add_subdirectory(App)

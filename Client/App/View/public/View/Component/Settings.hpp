@@ -45,10 +45,12 @@ public:
 // Threads
     void SetMaxThreads(int maxThreads);
     void SetThreadsSelected(int threads);
+    int GetThreadsSelected() const;
 
 // Blender Dir
     void SetBlenderDir(const std::string& blenderDir);
     void SetBlenderDirStatus(const std::string& status);
+    const std::string& GetBlenderDir() const;
 
 
     using ThreadsSettingCallbackT = decltype(_threadsSignal)::slot_type;
