@@ -23,9 +23,11 @@ FileManager::FileManager()
 : _exeDir(boost::dll::program_location().parent_path().string())
 , _tmpStorageDir(_exeDir / "tmp")
 , _configStorageDir(_exeDir / "config")
+, _assetStorageDir(_exeDir / "assets")
 {
     createDirIfNotFound(_tmpStorageDir);
     createDirIfNotFound(_configStorageDir);
+    createDirIfNotFound(_assetStorageDir);
 }
 
 const std::filesystem::path& FileManager::GetTmpStorageDir() const
@@ -36,6 +38,11 @@ const std::filesystem::path& FileManager::GetTmpStorageDir() const
 const std::filesystem::path& FileManager::GetConfigStorageDir() const
 {
     return _configStorageDir;
+}
+
+const std::filesystem::path& FileManager::GetAssetStorageDir() const
+{
+    return _assetStorageDir;
 }
 
 }

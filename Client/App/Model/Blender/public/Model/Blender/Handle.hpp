@@ -26,6 +26,7 @@ public:
     static std::optional<Handle> TryCreateHandle(const std::string& blenderPath);
 
     const Version& GetVersion() const;
+    const std::filesystem::path& GetPath() const;
 };
 
 } // namespace Blender

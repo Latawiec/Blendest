@@ -39,6 +39,11 @@ const Handle::Version& Handle::GetVersion() const
     return _version;
 }
 
+const std::filesystem::path& Handle::GetPath() const
+{
+    return _blenderPath;
+}
+
 namespace /* anonymous */ {
 const std::regex BlenderVersionRegex("Blender (\\d)\\.(\\d)\\.(\\d+)");
 }
