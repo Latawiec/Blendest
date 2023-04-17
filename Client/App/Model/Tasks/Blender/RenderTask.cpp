@@ -17,12 +17,14 @@ RenderTask::RenderTask(
     Model::Files::FileManager& fileManager,
     Model::Server::Connection& connection,
     const std::string& taskId,
-    const std::string& assetPath)
+    const std::string& downloadPath,
+    const std::string& uploadPath)
 : _blenderHandle(blenderHandle)
 , _fileManager(fileManager)
 , _connection(connection)
 , _taskId(taskId)
-, _blendFileServerPath(assetPath)
+, _blendFileServerPath(downloadPath)
+, _outputServerPath(uploadPath)
 , _taskProgress(Progress::Uninitialized)
 {}
 
@@ -41,6 +43,7 @@ Status RenderTask::GetStatus()
         case Initialized:
             return Status::Initializing;
         case Rendering:
+        case UploadingResults:
             return Status::Running;
         case Done:
             return Status::Done;
@@ -53,7 +56,7 @@ Status RenderTask::GetStatus()
 
 float RenderTask::GetProgress()
 {
-    return 0.1;
+    return float(_framesDone) / _blendFileInfo.framesCount;
 }
 
 bool RenderTask::Run()
@@ -74,13 +77,19 @@ bool RenderTask::Run()
     _taskProgress = Progress::Initialized;
 
     const std::string blenderExePath = _blenderHandle.GetPath().generic_string();
+    const std::string outputPath = (_taskWorkDir / _outputDir / "output_").generic_string();
 
-    System::Process blenderProcess { blenderExePath, { "-b", _blendFileLocalPath, "-a"} };
+    System::Process blenderProcess { blenderExePath, { "-b", _blendFileLocalPath, "-o", outputPath, "-a"} };
     std::future<int>& result = blenderProcess.Start();
 
     while (!_isCanceled && result.wait_for(1s) == std::future_status::timeout) {
-        // process output...
-        // "Fra:11 Mem:84.84M (Peak 148.12M) | Time:00:10.32 | Mem:31.94M, Peak:31.94M | Scene, ViewLayer | Finished"
+        const std::string output = blenderProcess.ReadStdOut();
+        const std::regex frameFinishedRegex("^Fra:(\\d+).*Finished$");
+        std::smatch m;
+
+        if (std::regex_search(output, m, frameFinishedRegex)) {
+            _framesDone++;
+        }
     }
 
     if (_isCanceled) {
@@ -89,6 +98,11 @@ bool RenderTask::Run()
     }
 
     if (result.get() != 0) {
+        _taskProgress = Progress::Failed;
+        return false;
+    }
+
+    if (!uploadResults()) {
         _taskProgress = Progress::Failed;
         return false;
     }
@@ -105,7 +119,7 @@ bool RenderTask::Cancel()
 
 const std::string& RenderTask::GetErrorMessage()
 {
-    return "";
+    return _errorMessage;
 }
 
 
@@ -192,6 +206,13 @@ bool RenderTask::readBlendFileInfo()
     }
 
     return false;
+}
+
+bool RenderTask::uploadResults()
+{
+    _taskProgress = Progress::UploadingResults;
+    // TODO
+    return true;
 }
 
 

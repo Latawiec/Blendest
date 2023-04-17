@@ -41,6 +41,7 @@ class RenderTask : public ITask {
         Failed
     };
     
+    int                        _framesDone = 0;
     Progress                   _taskProgress;
     Model::Blender::Handle&    _blenderHandle;
     Model::Files::FileManager& _fileManager;
@@ -53,6 +54,7 @@ class RenderTask : public ITask {
 
     const std::string _taskId;
     const std::string _blendFileServerPath;
+    const std::string _outputServerPath;
     std::string       _blendFileLocalPath;
 
     std::string _errorMessage = "";
@@ -65,6 +67,7 @@ class RenderTask : public ITask {
     bool createWorkDir();
     bool getBlendFile();
     bool readBlendFileInfo();
+    bool uploadResults();
 
 public:
     struct Parameters {
@@ -78,7 +81,8 @@ public:
         Model::Files::FileManager& fileManager,
         Model::Server::Connection& connection,
         const std::string& taskId,
-        const std::string& assetPath
+        const std::string& downloadPath,
+        const std::string& uploadPath
     );
 
     virtual ~RenderTask();

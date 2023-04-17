@@ -6,7 +6,9 @@ namespace Main {
     
 Main::Main()
 : Connection("", "")
-{}
+{
+    
+}
 
 }
 }
