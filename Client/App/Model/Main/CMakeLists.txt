@@ -14,10 +14,12 @@ add_dependencies(${PROJECT_NAME}
     Model.Server
     Model.Blender
     Model.Files
+    Model.Tasks
 )
  
 target_link_libraries(${PROJECT_NAME}
     PUBLIC Model.Server
     PUBLIC Model.Blender
     PUBLIC Model.Files
+    PUBLIC Model.Tasks
 )

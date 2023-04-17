@@ -3,6 +3,8 @@
 #include <View/Component/Connection.hpp>
 #include <View/Component/Settings.hpp>
 
+#include <View/Component/TestButton.hpp>
+
 #include <memory>
 
 namespace ftxui {
@@ -20,6 +22,8 @@ public:
     struct {
         Component::Connection connection;
         Component::Settings   settings;
+
+        Component::TestButton testButton{"Test"};
     } components;
 
     Main();

@@ -11,10 +11,11 @@ namespace View {
 namespace View {
 
 Main::Main()
-{
+ {
     _view = ftxui::Container::Horizontal({
         components.settings.GetComponent(),
-        components.connection.GetComponent()
+        components.connection.GetComponent(),
+        components.testButton.GetComponent()
     });
 }
 

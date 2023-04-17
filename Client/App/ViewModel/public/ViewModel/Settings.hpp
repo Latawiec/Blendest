@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Model/Blender/Handle.hpp>
+#include <Model/Blender/Settings.hpp>
 #include <View/Component/Settings.hpp>
 
 #include <nod.hpp>
@@ -9,7 +9,7 @@ namespace ViewModel {
 
 class Settings {
 
-    std::optional<Model::Blender::Handle> _blenderHandle;
+    Model::Blender::Settings& _model;
     View::Component::Settings& _view;
 
     struct {
@@ -22,7 +22,7 @@ class Settings {
     } _blenderDirSetting;
 
 public:
-    Settings(View::Component::Settings& view);
+    Settings(Model::Blender::Settings& model, View::Component::Settings& view);
 
 private:
     void onThreadsChanged(int threadsCount);

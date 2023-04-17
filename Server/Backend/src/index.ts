@@ -4,8 +4,10 @@ import { WebSocketServer } from 'ws';
 const app: express.Application = express();
 const port: number = 8080;
 
-app.get('/file/:fileName', (req, res)  => {
+app.get('/file/:fileName(*)', (req, res)  => {
+  console.log(req.params.fileName);
   const filename = req.params.fileName;
+  console.log(`requested D:/Programming/Blendest/Server/Backend/Assets/${filename}`);
   res.sendFile(`D:/Programming/Blendest/Server/Backend/Assets/${filename}`);
 });
 

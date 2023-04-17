@@ -6,6 +6,7 @@ add_library(${PROJECT_NAME}
     Connection.cpp
     Settings.cpp
     Main.cpp
+    TestButton.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

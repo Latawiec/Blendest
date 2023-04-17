@@ -4,6 +4,7 @@ project(Model.Blender)
 
 add_library(${PROJECT_NAME}
     Handle.cpp
+    Settings.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

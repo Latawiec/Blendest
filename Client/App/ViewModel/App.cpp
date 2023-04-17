@@ -4,17 +4,35 @@
 
 #include <ViewModel/Serializer/Serializer.hpp>
 
+#include <Model/Tasks/Blender/RenderTask.hpp>
+
 namespace ViewModel {
 
 App::App()
 : _model{}
 , _view{}
 , _connectionViewModel(_model.Connection, _view.components.connection)
-, _settingsViewModel(_view.components.settings)
+, _settingsViewModel(_model.BlenderSettings, _view.components.settings)
 {}
 
 void App::Run() 
 {
+    // TEST
+    {
+        _view.components.testButton.OnClick([&] {
+            Model::Tasks::Blender::RenderTask task {
+                _model.BlenderSettings.GetHandle().value(),
+                _model.FileManager,
+                _model.Connection,
+                "testTask",
+                "test/test.blend",
+                ""
+            };
+            task.Run();
+        });
+    }
+
+
     Serializer::Serializer serializer(_model.FileManager);
 
     serializer.Deserialize(_view);

@@ -90,9 +90,11 @@ std::future<Error> HttpSessionPayload::do_getFile(const std::string& target, con
                 parser.body_limit(std::numeric_limits<std::uint64_t>::max());
                 beast::http::read(_stream, buffer, parser);
 
+                auto resCode = parser.get().result_int();
+                resCode = resCode == 200 ? 0 : resCode;
                 return {
-                    .code = static_cast<int>(parser.get().result_int()),
-                    .message = res.reason() 
+                    .code = static_cast<int>(resCode),
+                    .message = parser.get().reason() 
                 };
             } catch (std::exception e) {
                 return {

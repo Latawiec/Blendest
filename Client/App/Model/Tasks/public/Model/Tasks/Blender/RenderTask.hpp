@@ -87,6 +87,7 @@ public:
 
     virtual ~RenderTask();
 
+    const std::string& GetTaskId() override;
     Status GetStatus() override;
     float GetProgress() override;
     bool Run() override;

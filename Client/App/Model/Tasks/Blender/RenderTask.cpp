@@ -4,6 +4,8 @@
 #include <chrono>
 #include <regex>
 #include <sstream>
+
+#include <iostream>
 #include <System/Process.hpp>
 
 using namespace std::chrono_literals;
@@ -31,6 +33,11 @@ RenderTask::RenderTask(
 RenderTask::~RenderTask()
 {
 
+}
+
+const std::string& RenderTask::GetTaskId()
+{
+    return _taskId;
 }
 
 Status RenderTask::GetStatus() 
@@ -84,8 +91,9 @@ bool RenderTask::Run()
 
     while (!_isCanceled && result.wait_for(1s) == std::future_status::timeout) {
         const std::string output = blenderProcess.ReadStdOut();
-        const std::regex frameFinishedRegex("^Fra:(\\d+).*Finished$");
+        const std::regex frameFinishedRegex("^Fra:(\\d+).*Finished\\n");
         std::smatch m;
+        std::cout << output;
 
         if (std::regex_search(output, m, frameFinishedRegex)) {
             _framesDone++;
@@ -140,7 +148,7 @@ bool RenderTask::getBlendFile()
     const auto filename = std::filesystem::path(_blendFileServerPath).filename();
     _blendFileLocalPath = (_taskWorkDir / _cacheDir / filename).generic_string();
 
-    auto fileFuture = _connection.Http().GetFile(_blendFileServerPath, _blendFileLocalPath);
+    auto fileFuture = _connection.Http().GetFile(std::string("/file/").append(_blendFileServerPath), _blendFileLocalPath);
 
     std::future_status status;
     switch (status = fileFuture.wait_for(_fetchFileTimeout), status) {
@@ -169,10 +177,10 @@ bool RenderTask::getBlendFile()
 namespace /* anonymous */ {
 const std::regex BlendFileInfoRegex(
 R"(
-^Scene: (.*)$
-^First frame: (.*)$
-^Last frame: (.*)$
-^Total frames: (.*)$
+^Scene: (.*)[\s]+
+^First frame: (.*)[\s]+
+^Last frame: (.*)[\s]+
+^Total frames: (.*)[\s]+
 )");
 
 }
@@ -190,6 +198,7 @@ bool RenderTask::readBlendFileInfo()
     if ((blenderProcessFuture.wait_for(_readFileDataTimeout) == std::future_status::ready) && blenderProcessFuture.get() == 0 ) {
         std::string output = blenderProcess.ReadStdOut();
         std::smatch m;
+        std::cout << output;
 
         if (std::regex_search(output, m, BlendFileInfoRegex)) {
             _blendFileInfo = {

@@ -4,8 +4,9 @@
 
 namespace ViewModel {
 
-Settings::Settings(View::Component::Settings& view)
-: _view(view)
+Settings::Settings(Model::Blender::Settings& model, View::Component::Settings& view)
+: _model(model)
+, _view(view)
 {
     _threadsSetting.onThreadsChangedHandle = _view.OnThreadsChanged([&](const int threadsCount) {
         onThreadsChanged(threadsCount);
@@ -26,14 +27,15 @@ void Settings::onThreadsChanged(int threadsCount)
 
 void Settings::onBlenderDirChanged(const std::string& blenderDir)
 {
-    _blenderHandle = Model::Blender::Handle::TryCreateHandle(blenderDir);
+    _model.ResetHandle(blenderDir);
+    auto& blenderHandleOpt = _model.GetHandle();
 
-    if (!_blenderHandle.has_value()) {
+    if (!blenderHandleOpt.has_value()) {
         _view.SetBlenderDirStatus("Wrong path");
     } else {
-        const auto& version = _blenderHandle.value().GetVersion();
+        const auto& version = blenderHandleOpt.value().GetVersion();
         _view.SetBlenderDirStatus(version.string());
     }
- }
+}
 
 }
