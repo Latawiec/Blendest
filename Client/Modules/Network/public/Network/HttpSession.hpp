@@ -27,6 +27,7 @@ public:
     void Stop();
 
     std::future<Error> GetFile(const std::string& target, const std::string& outputFilePath);
+    std::future<Error> SendFile(const std::string& target, const std::string& inputFilePath);
 };
 
 }

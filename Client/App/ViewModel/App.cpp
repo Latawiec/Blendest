@@ -20,15 +20,16 @@ void App::Run()
     // TEST
     {
         _view.components.testButton.OnClick([&] {
-            Model::Tasks::Blender::RenderTask task {
-                _model.BlenderSettings.GetHandle().value(),
-                _model.FileManager,
-                _model.Connection,
-                "testTask",
-                "test/test.blend",
-                ""
-            };
-            task.Run();
+            _model.Connection.Http().SendFile("/send", "C:\\Users\\lmarz\\Documents\\TexTools\\Saved\\FullModel\\Frustum\\mt_c0101e0684_glv_a_s.png");
+            // Model::Tasks::Blender::RenderTask task {
+            //     _model.BlenderSettings.GetHandle().value(),
+            //     _model.FileManager,
+            //     _model.Connection,
+            //     "testTask",
+            //     "test/test.blend",
+            //     ""
+            // };
+            // task.Run();
         });
     }
 

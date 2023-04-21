@@ -3,6 +3,7 @@
 
 #include <boost/asio/strand.hpp>
 #include <iostream>
+#include <fstream>
 
 namespace Network {
 
@@ -32,6 +33,11 @@ void HttpSessionPayload::Stop()
 std::future<Error> HttpSessionPayload::GetFile(const std::string& target, const std::string& outputFilePath)
 {
     return do_getFile(target, outputFilePath);
+}
+
+std::future<Error> HttpSessionPayload::SendFile(const std::string& target, const std::string& inputFilePath)
+{
+    return do_sendFile(target, inputFilePath);
 }
 
 void HttpSessionPayload::do_connect()
@@ -104,6 +110,53 @@ std::future<Error> HttpSessionPayload::do_getFile(const std::string& target, con
             }
 
         }, target, outputFilePath, _host));
+
+    return dispatch(_stream.get_executor(), std::move(task));
+}
+
+std::vector<BYTE> readFile(const char* filename)
+{
+    // open the file:
+    std::basic_ifstream<BYTE> file(filename, std::ios::binary);
+
+    // read the data:
+    return std::vector<BYTE>((std::istreambuf_iterator<BYTE>(file)),
+                              std::istreambuf_iterator<BYTE>());
+}
+
+std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, const std::string& inputFilePath)
+{
+    using namespace boost;
+    std::packaged_task<Error()> task(
+        std::bind([this](const std::string target, const std::string inputFilePath, const std::string host) -> Error {
+            beast::error_code  ec;
+            beast::http::request<beast::http::file_body> req;
+            beast::http::response<beast::http::file_body> res;
+
+            try {
+                req.version(11);
+                req.method(beast::http::verb::post);
+                req.target(target);
+                req.set(beast::http::field::host, host);
+                req.set(beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+                req.set(beast::http::field::content_type, "application/x-www-form-urlencoded");
+                req.body().open(inputFilePath.c_str(), beast::file_mode::scan, ec);
+                req.prepare_payload();
+
+                write(_stream, req);
+
+                return {
+                    .code = 0,
+                    .message = "" 
+                };
+            } catch (std::exception e) {
+                return {
+                    .code = ec.value(),
+                    .message = ec.message()
+                };
+            }
+
+        }, target, inputFilePath, _host));
 
     return dispatch(_stream.get_executor(), std::move(task));
 }

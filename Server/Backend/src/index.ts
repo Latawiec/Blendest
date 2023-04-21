@@ -1,14 +1,39 @@
 import express from 'express';
+import fileUpload from 'express-fileupload';
+import bodyParser from 'body-parser';
 import { WebSocketServer } from 'ws';
 
 const app: express.Application = express();
 const port: number = 8080;
+
+// app.use(fileUpload({
+//   debug: true
+// }));
+
+app.use(express.urlencoded({
+  limit: '50mb',
+  parameterLimit: 1000000,
+  extended: true
+}));
 
 app.get('/file/:fileName(*)', (req, res)  => {
   console.log(req.params.fileName);
   const filename = req.params.fileName;
   console.log(`requested D:/Programming/Blendest/Server/Backend/Assets/${filename}`);
   res.sendFile(`D:/Programming/Blendest/Server/Backend/Assets/${filename}`);
+});
+
+app.post('/send', (req, res) => {
+
+  console.log(JSON.stringify(req.body));
+
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  console.log(req.files);
+
+  return res.status(200).send("OK");
 });
 
 const server = app.listen(port);

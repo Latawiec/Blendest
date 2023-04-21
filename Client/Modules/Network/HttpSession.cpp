@@ -41,5 +41,9 @@ std::future<Error> HttpSession::GetFile(const std::string& target, const std::st
     return _payloadHandle->GetFile(target, outputFilePath);
 }
 
+std::future<Error> HttpSession::SendFile(const std::string& target, const std::string& inputFilePath)
+{
+    return _payloadHandle->SendFile(target, inputFilePath);
+}
 
 }

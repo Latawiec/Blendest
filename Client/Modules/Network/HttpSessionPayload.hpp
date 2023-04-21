@@ -23,12 +23,14 @@ public:
     void Stop();
 
     std::future<Error> GetFile(const std::string& target, const std::string& outputFilePath);
+    std::future<Error> SendFile(const std::string& target, const std::string& inputFilePath);
 
 private:
     void do_connect();
     std::future<void> do_stop();
 
     std::future<Error> do_getFile(const std::string& target, const std::string& outputFilePath);
+    std::future<Error> do_sendFile(const std::string& target, const std::string& inputFilePath);
 };
 
 }
