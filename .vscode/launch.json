@@ -23,6 +23,13 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Server Debug",
+            "program": "${workspaceFolder}/Server/Backend/src/index.ts",
+            "outFiles": ["${workspaceFolder}/Server/Backend/build/**/*.js"]
+          }
     ]
 }

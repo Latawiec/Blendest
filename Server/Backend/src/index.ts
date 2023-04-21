@@ -6,15 +6,15 @@ import { WebSocketServer } from 'ws';
 const app: express.Application = express();
 const port: number = 8080;
 
-// app.use(fileUpload({
-//   debug: true
-// }));
-
-app.use(express.urlencoded({
-  limit: '50mb',
-  parameterLimit: 1000000,
-  extended: true
+app.use(fileUpload({
+  debug: true
 }));
+
+// app.use(express.urlencoded({
+//   limit: '50mb',
+//   parameterLimit: 1000000,
+//   extended: true
+// }));
 
 app.get('/file/:fileName(*)', (req, res)  => {
   console.log(req.params.fileName);
@@ -25,9 +25,10 @@ app.get('/file/:fileName(*)', (req, res)  => {
 
 app.post('/send', (req, res) => {
 
-  console.log(JSON.stringify(req.body));
+  console.log(JSON.stringify(req.headers));
 
   if (!req.files || Object.keys(req.files).length === 0) {
+    console.log("No files were uploaded.");
     return res.status(400).send('No files were uploaded.');
   }
 

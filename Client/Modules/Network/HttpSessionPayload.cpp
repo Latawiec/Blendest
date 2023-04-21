@@ -3,6 +3,7 @@
 
 #include <boost/asio/strand.hpp>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 
 namespace Network {
@@ -126,11 +127,19 @@ std::vector<BYTE> readFile(const char* filename)
 
 std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, const std::string& inputFilePath)
 {
+#define MULTI_PART_BOUNDARY                                           \
+    "--part-----AaB03x" // This is the boundary to limit the start/end of a
+             // part. It may be any string. More info on the RFC
+             // 2388
+             // (https://datatracker.ietf.org/doc/html/rfc2388)
+#define CRLF                                                          \
+    "\r\n" // Line ends must be CRLF
+           // https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.4
     using namespace boost;
     std::packaged_task<Error()> task(
         std::bind([this](const std::string target, const std::string inputFilePath, const std::string host) -> Error {
             beast::error_code  ec;
-            beast::http::request<beast::http::file_body> req;
+            beast::http::request<beast::http::string_body> req;
             beast::http::response<beast::http::file_body> res;
 
             try {
@@ -139,8 +148,19 @@ std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, co
                 req.target(target);
                 req.set(beast::http::field::host, host);
                 req.set(beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-                req.set(beast::http::field::content_type, "application/x-www-form-urlencoded");
-                req.body().open(inputFilePath.c_str(), beast::file_mode::scan, ec);
+                req.set(beast::http::field::content_type, "multipart/form-data; boundary=" MULTI_PART_BOUNDARY);
+
+                std::ostringstream payload;
+                payload
+                    << "--" MULTI_PART_BOUNDARY CRLF
+                    << R"(Content-Disposition: form-data; name="file"; filename=)"
+                    << std::filesystem::path(inputFilePath).filename() << CRLF
+                    << "Content-Type: application/octet-stream" CRLF CRLF
+                    << std::ifstream(inputFilePath, std::ios::binary).rdbuf()
+                    << CRLF
+                    << "--" MULTI_PART_BOUNDARY << "--" CRLF;
+                
+                req.body() = std::move(payload).str();
                 req.prepare_payload();
 
                 write(_stream, req);
