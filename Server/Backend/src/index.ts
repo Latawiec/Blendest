@@ -1,20 +1,24 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import bodyParser from 'body-parser';
-import { WebSocketServer } from 'ws';
+import * as WebSocket from 'websocket';
+
+import { ConnectionManager } from '@net/ConnectionManager';
 
 const app: express.Application = express();
-const port: number = 8080;
+const port = process.env.PORT || 8080;
 
 app.use(fileUpload({
   debug: true
 }));
 
-// app.use(express.urlencoded({
-//   limit: '50mb',
-//   parameterLimit: 1000000,
-//   extended: true
-// }));
+const server = app.listen(port, () => {
+  console.log("Blendest server running on port: " + port);
+});
+
+const wsServer = new WebSocket.server({
+  httpServer: server
+});
 
 app.get('/file/:fileName(*)', (req, res)  => {
   console.log(req.params.fileName);
@@ -37,29 +41,18 @@ app.post('/send', (req, res) => {
   return res.status(200).send("OK");
 });
 
-const server = app.listen(port);
+const clientManager = new ConnectionManager(wsServer);
 
-const wss = new WebSocketServer({ server: server });
-wss.on('connection', function connection(ws) {
-  console.log("Connection!");
-
-ws.on('error', console.error);
-
-ws.on('message', function message(data) {
-  console.log('received: %s', data);
-});
-
-ws.on('close', function close(code, reason) {
-  console.log("Closed: ", code, " ", reason);
+clientManager.on('connectionCreated', (connection) =>{
+  console.log("Connected: [%d] %s", connection.id, connection.address);
+  connection.on('message', (data) => {
+    console.log("message");
+  })
+  connection.on('close', (data) => {
+    console.log("close");
+  })
 })
 
-ws.send('something');
-ws.send('something else');
-
-let i = 0;
-setInterval(() => {
-  ws.send(`Hi: ${i}`);
-  i++;
-}, 1000)
-});
-
+clientManager.on('connectionClosed', (connection) => {
+  console.log("Disconnected: [%d] %s", connection.id, connection.address);
+})

@@ -28,8 +28,15 @@
             "type": "node",
             "request": "launch",
             "name": "Server Debug",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
             "program": "${workspaceFolder}/Server/Backend/src/index.ts",
-            "outFiles": ["${workspaceFolder}/Server/Backend/build/**/*.js"]
+            "outFiles": ["${workspaceFolder}/Server/Backend/build/**/*.js"],
+            "cwd": "${workspaceFolder}/Server/Backend"
           }
     ]
 }

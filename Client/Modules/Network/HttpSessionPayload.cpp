@@ -103,10 +103,10 @@ std::future<Error> HttpSessionPayload::do_getFile(const std::string& target, con
                     .code = static_cast<int>(resCode),
                     .message = parser.get().reason() 
                 };
-            } catch (std::exception e) {
+            } catch (system::system_error ec) {
                 return {
-                    .code = ec.value(),
-                    .message = ec.message()
+                    .code = ec.code().value(),
+                    .message = ec.what()
                 };
             }
 
@@ -140,7 +140,7 @@ std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, co
         std::bind([this](const std::string target, const std::string inputFilePath, const std::string host) -> Error {
             beast::error_code  ec;
             beast::http::request<beast::http::string_body> req;
-            beast::http::response<beast::http::file_body> res;
+            beast::http::response<beast::http::string_body> res;
 
             try {
                 req.version(11);
@@ -165,14 +165,17 @@ std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, co
 
                 write(_stream, req);
 
+                beast::flat_buffer buffer;
+                read(_stream, buffer, res);
+
                 return {
-                    .code = 0,
-                    .message = "" 
+                    .code = static_cast<int>(res.result_int()),
+                    .message = ""
                 };
-            } catch (std::exception e) {
+            } catch (system::system_error ec) {
                 return {
-                    .code = ec.value(),
-                    .message = ec.message()
+                    .code = ec.code().value(),
+                    .message = ec.what()
                 };
             }
 

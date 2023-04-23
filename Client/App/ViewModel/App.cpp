@@ -5,7 +5,7 @@
 #include <ViewModel/Serializer/Serializer.hpp>
 
 #include <Model/Tasks/Blender/RenderTask.hpp>
-
+#include <iostream>
 namespace ViewModel {
 
 App::App()
@@ -20,7 +20,11 @@ void App::Run()
     // TEST
     {
         _view.components.testButton.OnClick([&] {
-            _model.Connection.Http().SendFile("/send", "C:\\Users\\lmarz\\Documents\\TexTools\\Saved\\FullModel\\Frustum\\mt_c0101e0684_glv_a_s.png");
+            auto errorFuture = _model.Connection.Http().SendFile("/send", "C:\\Users\\lmarz\\Documents\\TexTools\\Saved\\FullModel\\Frustum\\mt_c0101e0684_glv_a_s.png");
+            errorFuture.wait();
+            auto error = errorFuture.get();
+
+            std::cout<<error.code<<std::endl;
             // Model::Tasks::Blender::RenderTask task {
             //     _model.BlenderSettings.GetHandle().value(),
             //     _model.FileManager,
