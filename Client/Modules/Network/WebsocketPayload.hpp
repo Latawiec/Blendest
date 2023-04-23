@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <chrono>
+#include <memory>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -28,9 +29,17 @@ class WebsocketPayload {
     std::mutex                     _writeLock;
     std::mutex                     _errorLock; // Both main thread and reader thread can now push error messages.
 
-    boost::asio::thread_pool       _ioc{2};
-    boost::beast::websocket::stream<boost::asio::ip::tcp::socket> _ws{_ioc};
-    boost::asio::steady_timer      _timer{_ws.get_executor()};
+    struct BoostWebsocket {
+        boost::asio::thread_pool       _ioc{2};
+        boost::beast::websocket::stream<boost::asio::ip::tcp::socket> _ws{_ioc};
+        boost::asio::steady_timer      _timer{_ws.get_executor()};
+
+        // I need this to reset connection.
+        void Reset() {
+            std::destroy_at(this);
+            new (this) BoostWebsocket();
+        }
+    } _boostWs;
 
     std::chrono::milliseconds _tryReconnectTimeout;
     std::chrono::milliseconds _writeDelay = 100ms;

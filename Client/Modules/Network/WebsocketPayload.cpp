@@ -18,7 +18,7 @@ WebsocketPayload::~WebsocketPayload(){
 
 void WebsocketPayload::Start() {
     _is_started = true;
-    asio::post(_ws.get_executor(), [this] {
+    asio::post(_boostWs._ws.get_executor(), [this] {
         _stop_requested = false;
         do_main_thread();
     });
@@ -30,6 +30,9 @@ void WebsocketPayload::Stop() {
         do_stop();
         // We need to make sure everything is done, otherwise we might sweep resources from a running thread.
         _mainFinishedPromise.get_future().get();
+
+        // Recreate everything.
+        _boostWs.Reset();
     }
 }
 
@@ -99,14 +102,14 @@ void WebsocketPayload::do_connect() {
     
 
     try {
-        auto const results = asio::ip::tcp::resolver(_ioc).resolve(_host, _port);
-        auto ep = asio::connect(_ws.next_layer(), results);
+        auto const results = asio::ip::tcp::resolver(_boostWs._ioc).resolve(_host, _port);
+        auto ep = asio::connect(_boostWs._ws.next_layer(), results);
 
-        _ws.set_option(beast::websocket::stream_base::decorator([](beast::websocket::request_type& req) {
+        _boostWs._ws.set_option(beast::websocket::stream_base::decorator([](beast::websocket::request_type& req) {
                     req.set(beast::http::field::user_agent,
                             BOOST_BEAST_VERSION_STRING " WsConnect");
                 }));
-        _ws.handshake(_host + ':' + _port, "/");
+        _boostWs._ws.handshake(_host + ':' + _port, "/");
         set_status(WebsocketStatus::CONNECTED);
         _readBuffer.clear();
 
@@ -116,7 +119,7 @@ void WebsocketPayload::do_connect() {
     }
 
     _is_reader_started = true;
-    asio::post(_ws.get_executor(), [this] {
+    asio::post(_boostWs._ws.get_executor(), [this] {
         _readerFinishedPromise = std::promise<void>{};
         // Reader thread live.
         do_reader_thread();
@@ -127,8 +130,8 @@ void WebsocketPayload::do_connect() {
 void WebsocketPayload::do_read() {
     try {
         do {
-            _ws.read(_readBuffer);
-        } while (!_ws.is_message_done());
+            _boostWs._ws.read(_readBuffer);
+        } while (!_boostWs._ws.is_message_done());
         handle_message(_readBuffer);
 
     } catch (system::system_error ec) {
@@ -155,7 +158,7 @@ void WebsocketPayload::do_write() {
     int messagesPushed = 0;
     try {
         for (const auto& message : _writeBuffer) {
-            _ws.write(asio::buffer(message));
+            _boostWs._ws.write(asio::buffer(message));
         }
         _writeBuffer.clear();
     } catch (system::system_error ec) {
@@ -187,7 +190,7 @@ void WebsocketPayload::do_writing_delay() {
 void WebsocketPayload::do_stop() {
     if (!_stop_requested) {
         _stop_requested = true;
-        _ws.next_layer().cancel();
+        _boostWs._ws.next_layer().cancel();
     }
 }
 
