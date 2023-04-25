@@ -13,24 +13,6 @@ HttpSessionPayload::HttpSessionPayload(const std::string& host, const std::strin
 , _port(port)
 {}
 
-HttpSessionPayload::~HttpSessionPayload()
-{
-    Stop();
-}
-
-void HttpSessionPayload::Start()
-{
-    boost::asio::post(_stream.get_executor(), [this] {
-        _stop_requested = false;
-        do_connect();
-    });
-}
-
-void HttpSessionPayload::Stop()
-{
-    do_stop().wait();
-}
-
 std::future<Error> HttpSessionPayload::GetFile(const std::string& target, const std::string& outputFilePath)
 {
     return do_getFile(target, outputFilePath);
@@ -39,32 +21,6 @@ std::future<Error> HttpSessionPayload::GetFile(const std::string& target, const 
 std::future<Error> HttpSessionPayload::SendFile(const std::string& target, const std::string& inputFilePath)
 {
     return do_sendFile(target, inputFilePath);
-}
-
-void HttpSessionPayload::do_connect()
-{
-    using tcp = boost::asio::ip::tcp;
-    using error_code = boost::system::error_code;
-    using namespace boost;
-
-    _stream.async_connect(tcp::resolver(_ioc).resolve(_host, _port),
-        [this](error_code ec, tcp::endpoint /*ep*/) {
-            if (ec) {
-                const std::string err = ec.message();
-                return;
-            }
-
-            // Anything else here?
-        }
-    );
-}
-
-std::future<void> HttpSessionPayload::do_stop() {
-    using namespace boost;
-    return dispatch(_stream.get_executor(), std::packaged_task<void()>([this] {
-        _stop_requested = true;
-        _stream.cancel();
-    }));
 }
 
 std::future<Error> HttpSessionPayload::do_getFile(const std::string& target, const std::string& outputFilePath)
@@ -77,6 +33,14 @@ std::future<Error> HttpSessionPayload::do_getFile(const std::string& target, con
             beast::http::response<beast::http::file_body> res;
 
             try {
+
+                _stream.connect(asio::ip::tcp::tcp::resolver(_ioc).resolve(_host, _port), ec);
+                if (ec) {
+                    return {
+                        .code = ec.value(),
+                        .message = ec.message()
+                    };
+                }
 
                 req.method(beast::http::verb::get);
                 req.target(target);
@@ -143,6 +107,14 @@ std::future<Error> HttpSessionPayload::do_sendFile(const std::string& target, co
             beast::http::response<beast::http::string_body> res;
 
             try {
+                _stream.connect(asio::ip::tcp::tcp::resolver(_ioc).resolve(_host, _port), ec);
+                if (ec) {
+                    return {
+                        .code = ec.value(),
+                        .message = ec.message()
+                    };
+                }
+
                 req.version(11);
                 req.method(beast::http::verb::post);
                 req.target(target);

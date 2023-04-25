@@ -24,13 +24,11 @@ void Connection::Reset(std::string host, std::string port)
 void Connection::Start()
 {
     _websocket.Start();
-    _http.Start();
 }
 
 void Connection::Stop()
 {
     _websocket.Stop();
-    _http.Stop();
 }
 
 const std::string& Connection::GetHost() const

@@ -22,10 +22,7 @@ public:
 
     HttpSession(HttpSession&&);
     HttpSession& operator=(HttpSession&&);
-
-    void Start();
-    void Stop();
-
+    
     std::future<Error> GetFile(const std::string& target, const std::string& outputFilePath);
     std::future<Error> SendFile(const std::string& target, const std::string& inputFilePath);
 };
